@@ -1,61 +1,65 @@
 ﻿============================================================================
 Nodo - RFLink supported devices list
 ============================================================================
-Remote Controls and Electrical Switches / Dimmers etc.:
--------------------------------------------------------
-ARC Protocol:                                       (Send + Receive)
- - Klik Aan Klik Uit (Code Wheel)                   
- - Princeton PT2262 
- - MOSDESIGN M3EB 
- - Domia Lite 
- - Intertechno)
- - CoCo Technologies 
- - Cogex 
- - D-IO (Chacon) 
- - Nexa 
- - Düwi Terminal
+Remote Controls and Electrical Switches / Dimmers etc.:  
+-------------------------------------------------------  
+ARC Protocol:                                       (Send + Receive)  
+ - Klik Aan Klik Uit (Code Wheel)                    
+ - Princeton PT2262  
+ - MOSDESIGN M3EB  
+ - Domia Lite  
+ - Intertechno)  
+ - CoCo Technologies  
+ - Cogex  
+ - D-IO (Chacon)  
+ - Nexa  
+ - Düwi Terminal  
  - Promax RSL366T
- - ME FLS 100 
- - Profile PR-44N, PR-47N
- - Sartano 2606
- - Impuls
- - Elro AB400
- - Waveman
- - Elro Home Comfort AB600
- - (Elro) Home Control 
- - Smarthome YC-4000B
- - Phenix YC-4000S
- - Pollin Funk-Dimmer HouseLight FD-UP001 
- - Pollin Funk-Steckdosen-Set 2605
- - Conrad 646443 outlet sockets / RSL366R 
- - Proteam HO1853
- - Velleman WRS3B 
- 
- Automatic Code Learning Protocols:                  (Send + Receive)
-- Klik Aan Klik Uit
-  (among others: AWMR210, AWMT230, AWMD250, AWST8800)
-- Nexa Jula Anslut  
-- Home Easy EU
-
+ - Conrad 640472, 640473, 640475, 640476
+ - ME FLS 100  
+ - Profile PR-44N, PR-47N  
+ - Sartano 2606  
+ - Impuls (Needs additional tests!)
+ - Elro AB400  
+ - Waveman  
+ - Elro Home Comfort AB600  
+ - (Elro) Home Control   
+ - Smarthome YC-4000B  
+ - Phenix YC-4000S  
+ - Pollin Funk-Dimmer HouseLight FD-UP001   
+ - Pollin Funk-Steckdosen-Set 2605  
+ - Conrad 646443 outlet sockets / RSL366R   
+ - Proteam HO1853  
+ - Velleman WRS3B   
+   
+Automatic Code Learning Protocols:                  (Send + Receive)  
+- Klik Aan Klik Uit  
+  (among others: AWMR210, AWMT230, AWMD250, AWST8800)  
+- Nexa Jula Anslut   
+- Home Easy EU (among others HE100, HE200, HE300, AB600/HE600, HE800)
+- Smartwares (SH5-TDR-K 10.037.17)  
+  
 Others:                                             (Send + Receive)	
 - Home Easy (Code Wheel)                            
-- Unitec 48110 EIM 826 / 48111 EIM 821
-- Quigg GT-1000 RC / Quigg GT-FSI-08 
-- Intertek Eurodomest 972080                        
+- Unitec 48110 EIM 826 / 48111 EIM 821  
+- Quigg GT-1000 RC / Quigg GT-FSI-08   
+- Intertek Eurodomest 972080                         
 - Blyss                                             
-- Conrad RSL2, Conrad RSL88R/B
+- Conrad RSL2, Conrad RSL88R/B  
 - Kambrook RF3399/RF3405/RF3672/RF3689/RF4471R      
 - X10 RF switches                                   
-- Home Confort Smart Home - TEL-010 
-- Quigg GT-7008BS, Quigg GT-FSI-04
-- DMV-7008S 
-- Powerfix RCB-I 3600
-- Rev Ritter REV 8342L
-
-- Flamingo FA500R/S/DSS/WD                          
-- SilverCrest 91210/60494 RCS AAA3680
-- Mumbi M-FS300
-- Toom 1919384 
+- Home Confort Smart Home - TEL-010  
+- Quigg GT-7008BS, Quigg GT-FSI-04  
+- DMV-7008S   
+- Powerfix RCB-I 3600  
+- Chacon (TR-502MSV, NR.RC402)
+- Rev Ritter REV 8342L  
+- Ikea Koppla
+  
+- Flamingo FA500R/S/DSS/WD                           
+- SilverCrest 91210/60494 RCS AAA3680  
+- Mumbi M-FS300  
+- Toom 1919384   
 ============================================================================
 Weather Sensors:
 ----------------
@@ -94,8 +98,15 @@ Oregon V1/2/3:
           THC238, THC268, THN132N, THWR288A, THRN122N, THN122N, AW129, AW131, THGR268, THGR122X,
           THGN122N, THGN123N, THGR122NX, THGR228N, THGR238, WTGR800, THGR918, THGRN228NX, THGN500,
           THGR810, RTGR328N, THGR328N, Huger BTHR918, BTHR918N, BTHR968, RGR126, RGR682, RGR918, PCR122,
-          THWR800, THR128, THR138, THC138, OWL CM119, cent-a-meter, OWL CM113, Electrisave , RGR928,
+          THWR800, THR128, THR138, THC138, OWL CM119, cent-a-meter, OWL CM113, Electrisave, RGR928,
           UVN128, UV138, UVN800, Huger-STR918, WGR918, WGR800, PCR800, WGTR800, BTHG968
+============================================================================
+Pool/Water Thermometer          
+          Conrad 9771 Pool Thermometer
+============================================================================
+Soil : Temperature & Moisture/Humidity Sensors 
+          Imagintronix XH300 sensor
+          TH12 Opus TX300 
 ============================================================================
 Window blinds/shutters/sun screens:
 -----------------------------------
@@ -109,6 +120,10 @@ Low Budget Chinese Door/Window detectors
 Ajax Chub Varel PIR (only signals motion detection)
 KAKU AMST-606 door/window sensor (separate signals for open and close)
 CHACON DIO 54781 (separate signals for open and close)
+COCO
+Chuango Alarm devices
+Oregon Scientific NR868 PIR/night light
+Oregon Scientific MSR939 PIR
 ============================================================================
 Fireplace:
 ----------
@@ -118,6 +133,7 @@ Smoke Detectors:
 ----------------
 KD101                                                                          (Send + Receive)
 Flamingo FA20RF                                                                (Send + Receive)
+Chacon 34126                                                                   (Send + Receive)
 ============================================================================
 Doorbells:
 ----------
@@ -126,17 +142,42 @@ SelectPlus (200689101 - White - Date code:0914)                                (
 Deltronic Wireless Doorbell                                                    (Send + Receive) 
 RL-02 Wireless Doorbell                                                        (Send + Receive) 
 Byron SX                                                                       (Send + Receive)
+SilverCrest Z31370-TX                                                          (Receive) 
 Plieger York                                                                   (Receive) 
         Note that when the Plieger button is detected as Conrad RSL2, you need to use the button 
         on the inside of the Plieger doorbell to change the address code of the Plieger.
 ============================================================================
 Nodo Slave Sensors:
 -------------------
-Temperature, Humidity, UV, barometric Pressure sensors are supported when using 
-the following Nodo variable numbers:
+Various Nodo sensor types are supported.
+Make sure you use Nodo Slave ID 1,2, 4 till 9 to make the sensor a separate sensor.
+If you want to have combined sensors (eg temperature + humidity in one device) make sure
+you use Nodo Slave ID 10 till 16
+
+The following variable / sensor types are currently supported
+
+Variabele  5          : Temperature
+Variabele  6          : Humidity
+Variabele  7          : Rain
+Variabele  8          : Wind speed
+Variabele  9          : Wind direction     
+Variabele 10          : Wind gust
 Variable 11, 12 en 13 : Temperature
 Variable 14           : Humidity
 Variable 15           : UV
 Variable 16           : Barometric pressure 
+
+
+Electricity/Water/Gas pulse meters are supported when using the following Nodo variable numbers:
+
+Make sure the slave devices are using Nodo Slave ID 3 !!!
+
+Variabele  1 : Pulse value 1
+Variabele  2 : Pulse value 2
+Variabele  3 : Pulse value 3
+Variabele  4 : Pulse value 4
+Variabele  5 : Pulse value 5
+Variabele  6 : Pulse value 6
+
 If you require support for other sensors just let us know.
 ============================================================================

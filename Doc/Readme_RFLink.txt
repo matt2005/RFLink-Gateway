@@ -1,3 +1,45 @@
+Please note that the RFLink Gateway is a freeware project.   
+Stuntteam is not making money in any way.   
+This means that there are no unlimited funds to purchase test devices,   
+it also means the project has to rely on you, the user, to send debug data.  
+  
+If you want to contribute to this project, you can send a donation which is more than welcome (see www.nemcon.nl/blog2 donation button),   
+or help with sending debug data of unsupported devices (you can even write and contribute plugins and/or code fixes),  
+or donate the device that you would like to see supported.  
+   
+Right now we are looking for some older remotes and/or switches.  
+Like for example: Impuls, Ikea Koppla, Powerfix, Blyss, Home Confort, Conrad, Kambrook, Everflourish, SelectRemote  
+For the implementation of the planned 2.4Ghz support we could use some simple MySensor devices.   
+For the implementation of the planned 868Mhz support we could use some devices as well.   
+If you have anything that you do not use, send a mail to frankzirrone@gmail.com   
+Thanks in advance!  
+
+------------------------
+R30: 
+- New Device: Conrad 9771 Pool Thermometer
+- New Device: SilverCrest Z31370-TX Doorbell
+- New Device: Smartwares remote controls (among others: SH5-TDR-K 10.037.17) 
+- New Device: Chuango Alarm devices Motion/Door/Window etc. (among others: CG-105S)
+- New Device: Oregon Scientific NR868 PIR/night light
+- New Device: Oregon Scientific MSR939 PIR
+- New Device: Imagintronix Temperature/Soil humidity sensor
+- New Device: Ikea Koppla
+- New Device: Chacon (TR-502MSV, NR.RC402)
+- Fixed: Arc protocol send
+- Fixed: Impuls. Note: pair devices with the KAKU protocol, the remote is recognized separately. (Needs more tests!)
+- Changed: Plugin 3 send method, combined routines
+- Changed: HomeConfort was recognized as Impuls, now using GDR2 name
+- Changed: HomeEasy remotes can deliver various signals, now skipping KAKU compatible signals and just reporting the HomeEasy code when both codes are transmitted
+- Fixed: HomeEasy group on/off command was reversed for HE8xx devices, now correctly detects differences between HE3xx and HE8xx
+- Fixed: HomeEasy was not able to control HE87x switches, changed the entire transmit routine
+- Changed: stretched Xiron timing checks
+- Changed: Various timing modifications (NewKaku/AC, Blyss) due to the new timing introduced at version R26
+- Changed: Plugin 61, Chinese Alarm devices, reversed bits as it seemed to correspond better to bit settings, increased address range
+- Fixed: Flamingo Smokedetector packet detection tightened up to prevent false positives
+- Fixed: Corrected Conrad RSL command interpretation
+- Added: Extended Nodo Slave support to support separate and combined sensors
+- Added: Extended Nodo Slave support to support pulse meters
+===
 R29: 
 - Fixed: AC/NewKaku high unit numbers were incorrect. 
          If you already have devices with high unit numbers in Domoticz, just throw them away and let them be recognized again

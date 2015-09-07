@@ -63,8 +63,8 @@ boolean Plugin_006(byte function, char *string) {
       //==================================================================================
       // all bits received, make sure checksum is okay
       //==================================================================================
-      checksum=((bitstream) >> 24);                 
-      if (checksum != 0xFE) return false;
+      checksum=((bitstream) >> 24);                 // test preamble 
+      if (checksum != 0xFE) return false;           // must be 0xFE
       //==================================================================================
       // Prevent repeating signals from showing up
       //==================================================================================
@@ -183,8 +183,8 @@ void Blyss_Send(unsigned long address) {
     uint32_t fdatamask = 0x800000;
     uint32_t fsendbuff;
 
-    digitalWrite(PIN_RF_RX_VCC,LOW);                // Spanning naar de RF ontvanger uit om interferentie met de zender te voorkomen.
-    digitalWrite(PIN_RF_TX_VCC,HIGH);               // zet de 433Mhz zender aan
+    digitalWrite(PIN_RF_RX_VCC,LOW);                // Power off the RF receiver
+    digitalWrite(PIN_RF_TX_VCC,HIGH);               // Turn on the RF transmitter
     delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
     byte temp=(millis() &0xff);                     // used for the timestamp at the end of the RF packet
     for (int nRepeat = 0; nRepeat <= fretrans; nRepeat++) {
@@ -220,14 +220,14 @@ void Blyss_Send(unsigned long address) {
         // Send command (channel/address/status) - 28 bits
         for (int i = 0; i < 28; i++) {                 
             // read data bit
-            fdatabit = fsendbuff & fdatamask;          // Get most left bit
-            fsendbuff = (fsendbuff << 1);              // Shift left
-            if (fdatabit != fdatamask) { // Write 0
+            fdatabit = fsendbuff & fdatamask;       // Get most left bit
+            fsendbuff = (fsendbuff << 1);           // Shift left
+            if (fdatabit != fdatamask) {            // Write 0
                 digitalWrite(PIN_RF_TX_DATA, LOW);
                 delayMicroseconds(fpulse * 2);
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
                 delayMicroseconds(fpulse * 1);
-            } else { // Write 1
+            } else {                                // Write 1
                 digitalWrite(PIN_RF_TX_DATA, LOW);
                 delayMicroseconds(fpulse * 1);
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
@@ -240,14 +240,14 @@ void Blyss_Send(unsigned long address) {
         fdatamask=0x8000;
         for (int i = 0; i < 16; i++) {    
             // read data bit
-            fdatabit = fsendbuff & fdatamask;          // Get most left bit
-            fsendbuff = (fsendbuff << 1);              // Shift left
-            if (fdatabit != fdatamask) { // Write 0
+            fdatabit = fsendbuff & fdatamask;       // Get most left bit
+            fsendbuff = (fsendbuff << 1);           // Shift left
+            if (fdatabit != fdatamask) {            // Write 0
                 digitalWrite(PIN_RF_TX_DATA, LOW);
                 delayMicroseconds(fpulse * 2);
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
                 delayMicroseconds(fpulse * 1);
-            } else { // Write 1
+            } else {                                // Write 1
                 digitalWrite(PIN_RF_TX_DATA, LOW);
                 delayMicroseconds(fpulse * 1);
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
@@ -256,11 +256,11 @@ void Blyss_Send(unsigned long address) {
         }
         // --------------
         digitalWrite(PIN_RF_TX_DATA, LOW);
-        delayMicroseconds(fpulse * 14);
+        delayMicroseconds(fpulse * 18);             // delay between RF retransmits
     }
     delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
-    digitalWrite(PIN_RF_TX_VCC,LOW);                   // zet de 433Mhz zender weer uit
-    digitalWrite(PIN_RF_RX_VCC,HIGH);                  // Spanning naar de RF ontvanger weer aan.
+    digitalWrite(PIN_RF_TX_VCC,LOW);                // turn off the RF transmitter
+    digitalWrite(PIN_RF_RX_VCC,HIGH);               // power on the RF receiver
     RFLinkHW();
 }
 #endif // PLUGIN_TX_006

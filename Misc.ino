@@ -12,6 +12,7 @@ int str2cmd(char *command) {
     if(strcasecmp(command,"OFF") == 0) return VALUE_OFF;
     if(strcasecmp(command,"ALLON") == 0) return VALUE_ALLON;
     if(strcasecmp(command,"ALLOFF") == 0) return VALUE_ALLOFF;
+    if(strcasecmp(command,"PAIR") == 0) return VALUE_PAIR;
     return false;
 }
 /********************************************************************************************\

@@ -34,21 +34,30 @@
  350,1200,350,1200,350,1200,350,1225,350,1200,350,1200,1200,350,350,1225,350,1200,1200,350,
  350,1200,350,1200,1200,350,350,1200,350,1200,350,1200,350,1200,350,1200,350,1200,350,1200,
  350,1200,350,1200,350;
+ 
+20;3D;DEBUG;Pulses=68;Pulses(uSec)=600,6450,1290,330,390,1260,390,1260,360,1260,360,1260,390,1260,390,1260,1290,360,1260,360,1290,360,1290,330,1290,360,1260,360,1260,360,1290,330,1290,360,360,1260,360,1260,390,1260,390,1260,360,1260,1290,360,1260,360,360,1260,390,1260,360,1260,360,1260,360,1260,390,1260,1290,360,1290,360,1260,360,390,6990;
+20;3E;DEBUG;Pulses=68;Pulses(uSec)=720,6450,1290,330,390,1260,360,1260,360,1260,390,1260,390,1260,360,1260,1260,360,1290,330,1290,330,1290,360,1260,360,1260,360,1290,330,1290,360,1290,360,360,1260,360,1260,390,1260,360,1260,360,1260,1260,360,1290,330,390,1260,360,1260,360,1260,360,1260,390,1260,390,1260,1260,360,1260,360,1290,330,390,6990;
+20;3F;DEBUG;Pulses=68;Pulses(uSec)=630,6450,1290,360,360,1260,360,1260,390,1260,390,1260,360,1260,360,1260,1290,330,1290,330,1290,360,1260,360,1290,330,1290,330,1290,360,1260,360,1260,360,390,1260,390,1260,360,1260,360,1260,360,1260,1290,330,1290,360,360,1260,360,1260,390,1260,390,1260,360,1260,360,1260,1290,330,1290,330,1290,360,360,6990;
+
  \*********************************************************************************************/
 #define CONRADRSL2_PULSECOUNT 66
 #define CONRADRSL2_PULSEMID  600/RAWSIGNAL_SAMPLE_RATE
 
 #ifdef PLUGIN_007
 boolean Plugin_007(byte function, char *string){
-      if (RawSignal.Number != CONRADRSL2_PULSECOUNT) return false;
+      if ((RawSignal.Number != CONRADRSL2_PULSECOUNT) && (RawSignal.Number != CONRADRSL2_PULSECOUNT+2) ) return false;
       unsigned long bitstream=0L;
       byte checksum=0;
       byte button=0;
       byte group=0;
       byte action=0;
+      byte start=0;
+      if (RawSignal.Number == CONRADRSL2_PULSECOUNT+2) {
+         start=2;
+      }
       //==================================================================================
       // get bits
-      for(byte x=1;x < CONRADRSL2_PULSECOUNT-2;x=x+2) {
+      for(byte x=1+start;x < RawSignal.Number-2;x=x+2) {
          if (RawSignal.Pulses[x] > CONRADRSL2_PULSEMID) {
             if (RawSignal.Pulses[x+1] > CONRADRSL2_PULSEMID) return false;  // manchester check 
             bitstream = (bitstream << 1) | 0x1;     // 1
@@ -87,70 +96,98 @@ boolean Plugin_007(byte function, char *string){
       group=(button) & 0x7;                         // --   111
       action=((button) >> 3) & 0x1;                 // --  a
       button = ((button) >> 4) & 0x3;               // --bb
-      if (button==3) { 
-         if (group == 6) button=0;
-         if (group == 1 || group == 5) {
-            button=4;
-            action=~action;
-         }
-         if (group == 0) button=8;
-         if (group == 2 || group == 4) {
-            button=12;
-            action=~action;
-         }
-      } else
-      if (button==0) { 
-         if (group == 6 || group == 1) {
-            button=1;
-            action=~action;
-         }
-         if (group == 5) button=5;
-         if (group == 0 || group == 4) {
-            button=9;
-            action=~action;
-         }
-         if (group == 2) button=13;
-      } else
-      if (button==2) { 
-         if (group == 6) button=2;
-         if (group == 1 || group == 5) button=6;
-         if (group == 0) button=10;
-         if (group == 2 || group == 4) {
-            button=14;
-            action=~action;
-         }
-      } else
-      if (button==1) { 
-         if (group == 6) button=3;
-         if (group == 1 || group == 5) {
-            button=7;
-            action=~action;
-         }
-         if (group == 0) button=11;
-         if (group == 2 || group == 4) {
-            button=15;
-            action=~action;
-         }
-      } 
+      // -----
+      if (group == 3) {
+         action=button;
+         button=0;
+      } else {
+        if (button==3) { 
+           if (group == 6) {                        // toggle command bit 
+              button=0;
+              action=(~action)&1;
+           }
+           if (group == 1 || group == 5) {          // no toggle    
+              button=4;
+           }
+           if (group == 0) { 
+              action=(~action)&1;                   // toggle command bit
+              button=8;
+           }
+           if (group == 2 || group == 4) {          // no toggle
+              button=12;
+           }
+        } else
+        if (button==0) { 
+           if (group == 6 || group == 1) {          // no toggle
+              button=1;
+           }
+           if (group == 5) {                        // toggle command bit
+              button=5;
+              action=(~action)&1;
+           }
+           if (group == 0 || group == 4) {          // no toggle
+               button=9;
+           }
+           if (group == 2) {                        // toggle command bit
+              button=13;
+              action=(~action)&1;
+           }
+        } else
+        if (button==2) { 
+           if (group == 6) {                        // toggle command bit
+              button=2;
+              action=(~action)&1;
+           }
+            if (group == 1 || group == 5) button=6; // 
+            
+            if (group == 0) {                       // toggle command bit
+               button=10;
+               action=(~action)&1;
+            }
+            
+           if (group == 2 || group == 4) {          // no toggle 
+              button=14;
+              //action=(~action)&1;
+           }
+        } else
+        if (button==1) { 
+           if (group == 6) {                        // toggle command bit
+              button=3;
+              action=(~action)&1;  
+           }
+           if (group == 1 || group == 5) {          // no toggle 
+              button=7;
+              //action=(~action)&1;
+           }
+           if (group == 0) {                        // toggle command bit
+              button=11;
+              action=(~action)&1;
+           }
+           if (group == 2 || group == 4) {          // no toggle  
+              button=15;
+              //action=(~action)&1;
+           }
+        } 
+      }
       //==================================================================================
       // Output
       // ----------------------------------
       sprintf(pbuffer, "20;%02X;", PKSequenceNumber++);// Node and packet number 
       Serial.print( pbuffer );
       // ----------------------------------
-      Serial.print(F("Conrad RSL2;"));              // Label
+      Serial.print(F("Conrad;"));                   // Label
       sprintf(pbuffer, "ID=%06lx;",((bitstream) &0xffffff) );   // ID   
       Serial.print( pbuffer );
-      sprintf(pbuffer, "SWITCH=%02x;", button);      // Button number
+      sprintf(pbuffer, "SWITCH=%02x;", button);     // Button number
       Serial.print( pbuffer );
       Serial.print(F("CMD="));                      // command
       if (group==3) { 
          Serial.print(F("ALL"));           
-         if (button==1) Serial.print(F("ON;")); 
-         if (button==2) Serial.print(F("OFF;"));
-      } else {
-         if (action==1) Serial.print(F("ON;"));
-         if (action==0) Serial.print(F("OFF;"));
+      }
+      if (action==1) { 
+         Serial.print(F("ON;"));
+      } else {                                      // 0 normal off, 2  group off
+         Serial.print(F("OFF;"));
       }
       Serial.println();
       //==================================================================================

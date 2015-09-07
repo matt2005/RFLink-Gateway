@@ -65,7 +65,7 @@ boolean Plugin_002(byte function, char *string) {
       unsigned long bitstream1=0L;                  // holds first 16 bits 
       unsigned long bitstream2=0L;                  // holds last 28 bits
 
-      int sensordata=0;
+      unsigned int sensordata=0;
       byte checksum=0;
       byte bitcounter=0;                            // counts number of received bits (converted from pulses)
       byte sensortype=0;
@@ -117,7 +117,7 @@ boolean Plugin_002(byte function, char *string) {
       data[10]= (bitstream2 >>  4) & 0x0f;
       //==================================================================================
       for (byte i=0;i<11;i++){ 
-          checksum=checksum + data[i];
+          checksum=checksum + data[i];              // max. value = A5
       }
       checksum=checksum & 0x0f;
       if (checksum != ((bitstream2)&0x0f)) return false;

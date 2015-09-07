@@ -697,7 +697,7 @@ boolean Plugin_048(byte function, char *string) {
       // 1+A+8+9+0+4+8+8+0+0+C+0+0+4+3+1+1+0=45-a=3b
       if(id == 0x1a89) { // Wind sensor
         if ( checksum(1,9,osdata[9]) !=0) break;
-        Serial.print(" WDIR=");
+        Serial.print(" WINDIR=");
         wdir=(osdata[4] >> 4);
         wdir=wdir*225;
         wdir=wdir/10;
@@ -719,7 +719,7 @@ boolean Plugin_048(byte function, char *string) {
         Serial.print("Oregon Wind;");                    // Label
         sprintf(pbuffer, "ID=%02x%02x;", rc,osdata[2]);   // ID    
         Serial.print( pbuffer );
-        sprintf(pbuffer, "WDIR=%04x;", wdir);     
+        sprintf(pbuffer, "WINDIR=%04x;", wdir);     
         Serial.print( pbuffer );
         sprintf(pbuffer, "WINSP=%04x;", wspeed);     
         Serial.print( pbuffer );
@@ -756,7 +756,7 @@ boolean Plugin_048(byte function, char *string) {
         Serial.print("Oregon Wind2;");                   // Label
         sprintf(pbuffer, "ID=%02x%02x;", rc,osdata[2]);   // ID    
         Serial.print( pbuffer );
-        sprintf(pbuffer, "WDIR=%04x;", wdir);     
+        sprintf(pbuffer, "WINDIR=%04x;", wdir);     
         Serial.print( pbuffer );
         sprintf(pbuffer, "WINSP=%04x;", wspeed);     
         Serial.print( pbuffer );

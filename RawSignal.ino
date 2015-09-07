@@ -94,11 +94,8 @@ void RawSendRF(void) {
   digitalWrite(PIN_RF_RX_VCC,LOW);                                        // Spanning naar de RF ontvanger uit om interferentie met de zender te voorkomen.
   digitalWrite(PIN_RF_TX_VCC,HIGH);                                       // zet de 433Mhz zender aan
   delayMicroseconds(TRANSMITTER_STABLE_DELAY);                            // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
-  
-  // LET OP: In de Arduino versie 1.0.1 zit een bug in de funktie delayMicroSeconds(). Als deze wordt aangeroepen met een nul dan zal er
-  // een pause optreden van 16 milliseconden. Omdat het laatste element van RawSignal af sluit met een nul (omdat de space van de stopbit 
-  // feitelijk niet bestaat) zal deze bug optreden. Daarom wordt deze op 1 gezet om de bug te omzeilen. 
-  RawSignal.Pulses[RawSignal.Number]=1;
+
+  RawSignal.Pulses[RawSignal.Number]=1;                                   // due to a bug in Arduino 1.0.1
 
   for(byte y=0; y<RawSignal.Repeats; y++) {                               // herhaal verzenden RF code
      x=1;

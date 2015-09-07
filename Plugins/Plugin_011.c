@@ -6,7 +6,7 @@
  * Decodes signals from a Home Confort Smart Home - TEL-010 
  * http://idk.home-confort.net/divers/t%C3%A9l%C3%A9commande-rf-pour-produits-smart-home
  *
- * Author             : StuntTeam
+ * Author             : StuntTeam, François Pasteau
  * Support            : http://sourceforge.net/projects/rflink/
  * License            : This code is free for use in any open source project when this header is included.
  *                      Usage of any parts of this code in a commercial application is prohibited!
@@ -60,15 +60,13 @@ boolean Plugin_011(byte function, char *string) {
       if (RawSignal.Number != HC_PULSECOUNT ) return false; 
       if (RawSignal.Pulses[1]*RawSignal.Multiply < 2000) return false; // First (start) pulse needs to be long
 
-      unsigned long bitstream1=0;                   // holds first 32 bits 
-      unsigned long bitstream2=0;                   // holds last bit
+      unsigned long bitstream1=0;                   // holds first 24 bits 
+      unsigned long bitstream2=0;                   // holds last 26 bits
       byte bitcounter=0;                            // counts number of received bits (converted from pulses)
       byte command=0;
-      byte button=0;
       byte channel=0;
       byte subchan=0;
       byte group=0;
-      byte start=0;
       //==================================================================================
       for(int x=2;x < HC_PULSECOUNT-2;x+=2) {       // get bytes
          if (RawSignal.Pulses[x]*RawSignal.Multiply > 500) { // long pulse
@@ -103,6 +101,16 @@ boolean Plugin_011(byte function, char *string) {
       tempbyte=(bitstream2) & 0x3f; 
       if (tempbyte != 0x01) return false;           // low 6 bits are always '000001'?
       //==================================================================================
+      // Prevent repeating signals from showing up
+      //==================================================================================
+      if(SignalHash!=SignalHashPrevious || (RepeatingTimer<millis()+1500) || SignalCRC != bitstream2 ) { 
+         // not seen the RF packet recently
+         SignalCRC=bitstream2;
+      } else {
+         // already seen the RF packet recently
+         return true;
+      }       
+      //==================================================================================
       // now process the command / switch settings     
       //==================================================================================
       tempbyte=(bitstream1 >> 3) & 0x03;            // determine switch setting (a/b/c/d)
@@ -113,8 +121,8 @@ boolean Plugin_011(byte function, char *string) {
 
       subchan=((bitstream1)&0x03)+1;                // determine button number
       
-      command=(bitstream2 >> 7) & 0x01;            // on/off command
-      group=(bitstream2 >> 6) & 0x01;              // group setting
+      command=(bitstream2 >> 7) & 0x01;             // on/off command
+      group=(bitstream2 >> 6) & 0x01;               // group setting
       
       bitstream1=bitstream1 >> 5;
       //==================================================================================
@@ -122,7 +130,7 @@ boolean Plugin_011(byte function, char *string) {
       // ----------------------------------
       sprintf(pbuffer, "20;%02X;", PKSequenceNumber++); // Node and packet number 
       Serial.print( pbuffer );
-      Serial.print(F("IMPULS;"));                       // Label
+      Serial.print(F("HomeConfort;"));              // Label
       sprintf(pbuffer, "ID=%06lx;",((bitstream1) &0xffffff) );   // ID   
       Serial.print( pbuffer );
       sprintf(pbuffer, "SWITCH=%c%d;", channel,subchan);    
@@ -144,23 +152,23 @@ void HomeConfort_Send(unsigned long bitstream1, unsigned long bitstream2);
 
 boolean PluginTX_011(byte function, char *string) {
         boolean success=false;
-        //10;IMPULS;01b523;D3;ON;
-        //012345678901234567890123
-        if (strncasecmp(InputBuffer_Serial+3,"IMPULS;",7) == 0) { // KAKU Command eg. 
+        //10;HomeConfort;01b523;D3;ON;
+        //0123456789012345678901234567
+        if (strncasecmp(InputBuffer_Serial+3,"HomeConfort;",12) == 0) { // KAKU Command eg. 
            if (InputBuffer_Serial[16] != ';') return success;
           
-           InputBuffer_Serial[8]=0x30;
-           InputBuffer_Serial[9]=0x78;                            // Get address from hexadecimal value 
-           InputBuffer_Serial[16]=0x00;                            // Get address from hexadecimal value 
+           InputBuffer_Serial[13]=0x30;
+           InputBuffer_Serial[14]=0x78;                            // Get address from hexadecimal value 
+           InputBuffer_Serial[21]=0x00;                            // Get address from hexadecimal value 
 
            unsigned long bitstream1=0L;                            // First Main placeholder
            unsigned long bitstream2=0L;                            // Second Main placeholder
            byte Home=0;                                            // channel A..D
            byte Address=0;                                         // subchannel 1..5
            byte c;
-           byte x=17;                                              // pointer
+           byte x=22;                                              // pointer
            // -------------------------------
-           bitstream1=str2int(InputBuffer_Serial+8);              // Address (first 19 bits)
+           bitstream1=str2int(InputBuffer_Serial+13);              // Address (first 19 bits)
            // -------------------------------
            while((c=tolower(InputBuffer_Serial[x++]))!=';') {
                  if(c>='0' && c<='9'){Address=Address+c-'0';}      // Home 0..9
@@ -174,11 +182,11 @@ boolean PluginTX_011(byte function, char *string) {
            Address=Address & 0x03;                                 // only accept 2 bits for the button number part 
            bitstream1=bitstream1+Address;
            
-           if (Home == 1) c=0;                                     // A
-           if (Home == 2) c=2;                                     // B
-           if (Home == 3) c=1;                                     // C
-           if (Home == 4) c=3;                                     // D
-           Home=Home << 3;                                         // shift left for the right position
+           if (Home == 0) c=0;                                     // A
+           if (Home == 1) c=2;                                     // B
+           if (Home == 2) c=1;                                     // C
+           if (Home == 3) c=3;                                     // D
+           Home=c << 3;                                            // shift left for the right position
            bitstream1=bitstream1+Home;
            // -------------------------------
            // prepare bitsrteam2
@@ -204,8 +212,8 @@ boolean PluginTX_011(byte function, char *string) {
         return success;
 }
 
-#define PLUGIN_011_RFLOW        300
-#define PLUGIN_011_RFHIGH       800
+#define PLUGIN_011_RFLOW        270                   // 300
+#define PLUGIN_011_RFHIGH       720                   // 800
 
 void HomeConfort_Send(unsigned long bitstream1, unsigned long bitstream2) { 
      RawSignal.Repeats=3;                             // Number of RF packet retransmits

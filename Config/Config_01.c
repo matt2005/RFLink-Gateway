@@ -4,7 +4,7 @@
 // Here are all plugins listed that are supported and used after compilation.
 // When needed additional plugins can be added or selected plugins can be enabled/disabled.
 //
-// BEWARE OF THE PLUGIN_MAX setting!!       TX: 38      RX: 17
+// BEWARE OF THE PLUGIN_MAX setting!!       TX: 44      RX: 17
 // ****************************************************************************************************************************************
 // Translation Plugin for oversized packets due to their breaks/pause being too short between packets
 // Used for Flamingo FA500R and various others, do NOT exclude this plugin.
@@ -24,6 +24,7 @@
 #define PLUGIN_011              // Home Confort
 #define PLUGIN_012              // Flamingo FA500R
 #define PLUGIN_013              // Powerfix/Quigg
+#define PLUGIN_014              // Ikea Koppla
 #define PLUGIN_015              // Home Easy EU 
 // -------------------
 // Weather sensors
@@ -31,7 +32,9 @@
 #define PLUGIN_030              // Alecto V1 (WS3500) 434 MHz.
 #define PLUGIN_031              // Alecto V3 (WS1100/WS1200/WSD-19) 433.9 MHz.
 #define PLUGIN_032              // Alecto V4
+#define PLUGIN_033              // Conrad Pool Thermometer
 #define PLUGIN_034              // Cresta 
+#define PLUGIN_035              // Imagintronix
 #define PLUGIN_040              // Mebus
 #define PLUGIN_041              // LaCrosse v3 ws7000
 #define PLUGIN_042              // UPM/Esic
@@ -45,6 +48,8 @@
 // -------------------
 #define PLUGIN_060              // Ajax Chubb Varel 433 MHz. motion sensors
 #define PLUGIN_061              // Chinese PIR motion door and window sensors 
+#define PLUGIN_062              // Chuango Alarm Devices
+#define PLUGIN_063              // Oregon PIR/ALARM/LIGHT
 // -------------------
 // Doorbells
 // -------------------
@@ -53,6 +58,7 @@
 #define PLUGIN_072              // Byron SX doorbell
 #define PLUGIN_073              // Deltronic doorbell
 #define PLUGIN_074              // RL02
+#define PLUGIN_075              // Silvercrest
 // -------------------
 // Smoke detectors / Fire Places
 // -------------------

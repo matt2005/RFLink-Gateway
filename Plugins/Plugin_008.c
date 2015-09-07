@@ -26,6 +26,8 @@
  * D = Trailing, always 0xFF
  *  
  * Details http://wiki.beyondlogic.org/index.php?title=Reverse_engineering_the_RF_protocol_on_a_Kambrook_Power_Point_Controller
+ *
+ * 20;33;DEBUG;Pulses=96;Pulses(uSec)=270,180,600,180,210,180,600,180,210,180,600,180,210,180,600,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,600,180,210,180,210,180,210,180,210,180,210,180,210,180,210,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,6990;
  \*********************************************************************************************/
 #define KAMBROOK_PULSECOUNT 96
 #define KAMBROOK_PULSEMID  400/RAWSIGNAL_SAMPLE_RATE
@@ -166,6 +168,7 @@ boolean PluginTX_008(byte function, char *string) {
 
 void Kambrook_Send(unsigned long address) { 
     int fpulse = 300;                                  // Pulse witdh in microseconds
+    int fpulse2 = 700;                                 // Pulse witdh in microseconds
     int fretrans = 5;                                  // Number of code retransmissions
     uint32_t fdatabit;
     uint32_t fdatamask = 0x800000;
@@ -185,14 +188,14 @@ void Kambrook_Send(unsigned long address) {
             fsendbuff = (fsendbuff << 1);              // Shift left
             if (fdatabit != fdatamask) { // Write 0
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             } else { // Write 1
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 2);
+                delayMicroseconds(fpulse2);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             }
         }
         // --------------
@@ -205,14 +208,14 @@ void Kambrook_Send(unsigned long address) {
             fsendbuff = (fsendbuff << 1);              // Shift left
             if (fdatabit != fdatamask) { // Write 0
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             } else { // Write 1
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 2);
+                delayMicroseconds(fpulse2);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             }
         }
         // --------------
@@ -225,19 +228,19 @@ void Kambrook_Send(unsigned long address) {
             fsendbuff = (fsendbuff << 1);              // Shift left
             if (fdatabit != fdatamask) { // Write 0
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             } else { // Write 1
                 digitalWrite(PIN_RF_TX_DATA, HIGH);
-                delayMicroseconds(fpulse * 2);
+                delayMicroseconds(fpulse2);
                 digitalWrite(PIN_RF_TX_DATA, LOW);
-                delayMicroseconds(fpulse * 1);
+                delayMicroseconds(fpulse);
             }
         }
         // --------------
         digitalWrite(PIN_RF_TX_DATA, LOW);
-        delayMicroseconds(fpulse * 20); //14
+        delayMicroseconds(fpulse2 * 14); 
     }
     delayMicroseconds(TRANSMITTER_STABLE_DELAY);       // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
     digitalWrite(PIN_RF_TX_VCC,LOW);                   // zet de 433Mhz zender weer uit

@@ -18,17 +18,30 @@ LABEL=data  => contains the field type and data for that field, can be present m
 
 Packet structure - Send data via RF:
 ------------------------------------
-10;Name;device;action;
+10;Protocol Name;device address,button number;action; 
 
-10;Kaku;A1;ON;              => protocol;address;action (ON/OFF)
-10;NewKaku;00c142;1;ON;     => protocol;address;button number (hexadecimal 0x0-0x0f);action (ON/OFF/ALLON/ALLOFF/15 - 1 to 15 for direct dim level)
-10;HomeEasy;7900b100;3;ON;  => protocol;address;action (ON/OFF/ALLON/ALLOFF)
-10;SmokeAlert;123456;ON;    => protocol;address;action 
-10;FA500;12345678;ON;       => protocol;address;action (ON/OFF)
-10;Eurodomest;123456;01;ON; => protocol;address;button number;action (ON/OFF/ALLON/ALLOFF)
-10;Selectplus;1234;         => protocol;address
-10;Byron;1234;01            => protocol;address;ringtone;
-10;Blyss;ff98;A1;OFF;       => protocol;address;button;action (ON/OFF/ALLON/ALLOFF)
+10;Kaku;00004d;1;OFF;       => Kaku/ARC protocol;address;action (ON/OFF)
+10;AB400D;00004d;1;OFF;     => Sartano protocol;address;action (ON/OFF)
+10;Impuls;00004d;1;OFF;     => Impuls protocol;address;action (ON/OFF)
+10;NewKaku;00c142;1;ON;     => Newkaku/AC protocol;address;button number (hexadecimal 0x0-0x0f);action (ON/OFF/ALLON/ALLOFF/15 - 1 to 15 for direct dim level)
+10;Eurodomest;123456;01;ON; => Eurodomest protocol;address;button number;action (ON/OFF/ALLON/ALLOFF)
+10;Blyss;ff98;A1;OFF;       => Blyss protocol;address;button;action (ON/OFF/ALLON/ALLOFF)
+10;Conrad;ff0607;1;OFF;     => Conrad RSL protocol, address, button number, action (ON/OFF/ALLON/ALLOFF)
+10;Kambrook;050325;a1;ON;   => Kambrook protocol, address, unit/button number, action (ON/OFF)
+10;X10;000041;1;OFF;        => X10 protocol;address;action (ON/OFF)
+10;HomeConfort;01b523;D3;ON;=> HomeConfort protocol;address;action (ON/OFF)
+10;FA500;001b523;D3;ON;     => Flamingo protocol;address;action (ON/OFF)
+10;Powerfix;000080;0;ON;    => Powerfix/Quigg/Chacon protocol;address;action (ON/OFF)
+10;Ikea Koppla;000080;0;ON; => Koppla protocol;address;action (ON/OFF) 
+10;HomeEasy;7900b100;3;ON;  => Home Easy protocol;address;action (ON/OFF/ALLON/ALLOFF)
+10;Chuango;000080;2;ON;     => Chuango Protocol;address;action (ON/OFF/ALLON/ALLOFF)
+10;Selectplus;001c33;       => SelectPlus protocol;address
+10;Byron;112233;01;OFF;     => Dyron SX protocol;address;ringtone
+10;DELTRONIC;001c33;        => Deltronic protocol;address
+10;Byron MP;1234            => RL02 protocol;address;
+10;FA20RF;67f570;1;ON;      => Flamingo FA20RF / FA21 / KD101 protocol, address, button number, action (ON/OFF/ALLON/ALLOFF)
+10;MERTIK;64;UP;            => Mertik protocol, address, command
+
 
 
 Control Commands - Send:

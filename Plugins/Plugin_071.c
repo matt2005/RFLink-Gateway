@@ -79,7 +79,7 @@ boolean Plugin_071(byte function, char *string) {
       // ----------------------------------
       Serial.print("20;");
       PrintHexByte(PKSequenceNumber++);
-      Serial.print(F(";Plieger York;"));                   // Label
+      Serial.print(F(";Plieger;"));                   // Label
       // ----------------------------------
       sprintf(pbuffer, "ID=%04x;", id);                 // ID      
       Serial.print( pbuffer );

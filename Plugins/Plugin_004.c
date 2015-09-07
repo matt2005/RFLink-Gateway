@@ -29,10 +29,17 @@
  \*********************************************************************************************/
 #define NewKAKU_RawSignalLength      132        // regular KAKU packet length
 #define NewKAKUdim_RawSignalLength   148        // KAKU packet length including DIM bits
+
+#define NewKAKU_1T                   260        // us
+#define NewKAKU_mT                   650/RAWSIGNAL_SAMPLE_RATE // us, approx. in between 1T and 4T 
+#define NewKAKU_4T                   NewKAKU_1T*4        // 1040 us
+#define NewKAKU_8T                   NewKAKU_1T*8        // 2080 us, Tijd van de space na de startbit
+/*
 #define NewKAKU_1T                   225        // 275        // us
 #define NewKAKU_mT                   650/RAWSIGNAL_SAMPLE_RATE // us, approx. in between 1T and 4T 
 #define NewKAKU_4T                  1225        // 1100       // us
 #define NewKAKU_8T                  2600        // 2200       // us, Duration of the space after the start bit
+*/
 
 #ifdef PLUGIN_004
 boolean Plugin_004(byte function, char *string) {
@@ -128,7 +135,7 @@ boolean Plugin_004(byte function, char *string) {
 boolean PluginTX_004(byte function, char *string) {
         boolean success=false;
         //10;NewKaku;123456;3;ON;                   // ON, OFF, ALLON, ALLOFF, ALL 99, 99      
-        
+        //10;NewKaku;0cac142;2;ON;
         //10;NewKaku;050515;f;OFF;
         //10;NewKaku;2100fed;1;ON;
         //10;NewKaku;000001;10;ON;

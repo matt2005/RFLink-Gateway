@@ -10,11 +10,6 @@
  * License            : This code is free for use in any open source project when this header is included.
  *                      Usage of any parts of this code in a commercial application is prohibited!
  ***********************************************************************************************
- * Incoming event: "Eurodomest <adres>,<unitcode>, <On | Off>
- * Send          : "EurodomestSend <Adres>,<unitcode>, <On | Off> 
- *
- * Address = hexadecimal address
- ***********************************************************************************************
  * Technical information:
  *
  * 0111 00011011 00011111 000 0
@@ -36,12 +31,13 @@
 #ifdef PLUGIN_005
 boolean Plugin_005(byte function, char *string) {
       if (RawSignal.Number != EURODOMEST_PulseLength) return false; 
+      if (RawSignal.Pulses[0]==63) return false;    // No need to test, packet for plugin 63
       unsigned long bitstream=0;
       byte unitcode=0;
       byte command=0;
       unsigned long address=0;
       // ==========================================================================
-      if(RawSignal.Pulses[49] > EURODOMEST_PULSEMID) return false;  // last pulse (stop bit) needs to be short, otherwise no Eurodomest protocol
+      if(RawSignal.Pulses[49] > EURODOMEST_PULSEMID) return false;  // last pulse needs to be short, otherwise no Eurodomest protocol
       // get all 24 bits
       for(int x=2;x < EURODOMEST_PulseLength;x+=2) {
          if(RawSignal.Pulses[x] > EURODOMEST_PULSEMID) { // long pulse
