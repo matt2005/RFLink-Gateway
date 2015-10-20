@@ -1,12 +1,12 @@
 
 //##                    This Plugin is only for use with the RFLink software package                   ##
-//##                                      Plugin-10 RGB Controller                                     ##
+//##                                      Plugin-10 TRC02 RGB Controller                               ##
 //#######################################################################################################
 /*********************************************************************************************\
- * Decodes signals from a wireless RGB controller remote control
+ * Decodes signals from a wireless RGB TRC02 controller remote control
  * 
  *
- * Author             : StuntTeam
+ * Author             : StuntTeam, Marek Zlatos,
  * Support            : http://sourceforge.net/projects/rflink/
  * License            : This code is free for use in any open source project when this header is included.
  *                      Usage of any parts of this code in a commercial application is prohibited!
@@ -14,7 +14,7 @@
  * Changelog: v1.0 initial release
  *********************************************************************************************
  * Technical information:
- * Decodes signals from a wireless RGB controller remote control
+ * Decodes signals from a wireless TRC02 RGB controller remote control
  * --------------------------------------------------------------------------------------------
  * _Byte 0_  _Byte 1_  _Byte 2_  _Byte 3_  _Bit_
  * 76543210  76543210  76543210  76543210  0
@@ -22,7 +22,7 @@
  *
  * A = Rolling Code
  * B = Rolling Code
- * C = Constant, always 0xFF
+ * C = Rolling Code
  * D = Command
  * E = Checksum. bit is XOR of all bits in the RF message
  * 
@@ -31,35 +31,27 @@
  * 01 OFF
  * 02 Dim Down
  * 03 DIM UP
- * 06 Color Mix UP
- * 07 Color Mix Down
- * 19 Color Wheel Red
- * 29 Color Wheel Blue
- * 4D Color Wheel Yellow
- * 74 Color Wheel Green 
-
- 10011011  9b  YELLOW
- 00111000  38  RED
- 00111000      BLUE
- 11010011 D3   green
- 
-RGB Control:10001101110000101111111100000000 1  20;1B;RGB SWITCH;ID=8dc2;SWITCH=00;CMD=ON;
-RGB Control:10001101110000101111111100000000 1  20;1D;RGB SWITCH;ID=8dc2;SWITCH=00;CMD=ON;
-RGB Control:10001101110000101111111100010101 0  20;1F;RGB SWITCH;ID=8dc2;SWITCH=15;CMD=
-RGB Control:10001101110000101111111111001000 0  20;21;RGB SWITCH;ID=8dc2;SWITCH=c8;CMD=
-RGB Control:10001101110000101111111111000000 1  20;23;RGB SWITCH;ID=8dc2;SWITCH=c0;CMD=
-RGB Control:10001101110000101111111101000001 1  20;25;RGB SWITCH;ID=8dc2;SWITCH=41;CMD=
+ * 05 Color Mix UP
+ * 04 Color Mix Down
+ * 87 Color Wheel Red
+ * 34 Color Wheel Blue
+ * 78 Color Wheel Yellow
+ * 5D Color Wheel Green 
+ *
+ * Sample:
+ * 20;30;DEBUG;Pulses=180;Pulses(uSec)=450,420,420,420,420,420,1410,960,420,420,420,420,420,420,420,420,420,420,930,420,420,960,420,420,420,420,420,420,420,420,420,420,930,960,420,420,420,420,930,420,420,420,420,420,420,960,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,930,390,1440,960,420,420,420,420,420,420,420,420,420,420,930,420,420,960,420,420,420,420,420,420,420,420,420,420,930,960,420,420,420,420,930,420,420,420,420,420,420,960,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,930,390,1440,960,420,420,420,420,420,420,420,420,420,420,930,420,420,960,420,420,420,420,420,420,420,420,420,420,930,960,420,420,420,420,930,420,420,420,420,420,420,960,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,420,930,6990
+ * TRC02:00000011 00000010 00111100 00000000 1 
+ * 20;01;TRC02;ID=03023c;SWITCH=00;CMD=ON;
  \*********************************************************************************************/
-#define RGB_MIN_PULSECOUNT  134
-#define RGB_MAX_PULSECOUNT  164
+#define RGB_MIN_PULSECOUNT  180
+#define RGB_MAX_PULSECOUNT  186
 
-#define RGB_PULSE_STHI      1500/RAWSIGNAL_SAMPLE_RATE
-#define RGB_PULSE_STLO      1200/RAWSIGNAL_SAMPLE_RATE
-#define RGB_PULSE_HIHI      1000/RAWSIGNAL_SAMPLE_RATE
-#define RGB_PULSE_HILO      750/RAWSIGNAL_SAMPLE_RATE
-#define RGB_PULSE_LOHI      625/RAWSIGNAL_SAMPLE_RATE
-#define RGB_PULSE_LOLO      250/RAWSIGNAL_SAMPLE_RATE
-
+#define RGB_PULSE_STHI      1600/RAWSIGNAL_SAMPLE_RATE
+#define RGB_PULSE_STLO      1300/RAWSIGNAL_SAMPLE_RATE
+#define RGB_PULSE_HIHI      1100/RAWSIGNAL_SAMPLE_RATE
+#define RGB_PULSE_HILO      900/RAWSIGNAL_SAMPLE_RATE
+#define RGB_PULSE_LOHI      600/RAWSIGNAL_SAMPLE_RATE
+#define RGB_PULSE_LOLO      400/RAWSIGNAL_SAMPLE_RATE
 
 #ifdef PLUGIN_010
 boolean Plugin_010(byte function, char *string) {
@@ -70,6 +62,7 @@ boolean Plugin_010(byte function, char *string) {
       byte crc=0;                                   // holds the crc bit from the signal
       byte bitcounter=0;                            // counts number of received bits (converted from pulses)
       byte halfbit=0;                               // high pulse = 1, 2 low pulses = 0, halfbit keeps track of low pulses
+	  byte bitmask = 0;
       int command=0;
       byte start_stop=0;
       byte x=1;
@@ -89,8 +82,13 @@ boolean Plugin_010(byte function, char *string) {
             if (halfbit==1) {                       // cant receive a 1 bit after a single low value
                return false;                        // pulse error, must not be a UPM packet or reception error
             }
+			bitmask = !bitmask;
             if (bitcounter < 32) {
-                bitstream = (bitstream << 1) | 0x1;
+				if (bitmask == 1){
+					bitstream = (bitstream << 1);
+				} else {
+					bitstream = (bitstream << 1) | 0x1;
+				}
                 bitcounter++;                       // only need to count the first 10 bits
             } else {
                 crc =1;
@@ -103,9 +101,13 @@ boolean Plugin_010(byte function, char *string) {
                halfbit=1;                           // first half received   
             } else {
                if (bitcounter < 32) {
-                  bitstream = (bitstream << 1); 
-                  checksum=checksum^1;
-                  bitcounter++;                     // only need to count the first 10 bits
+                   if (bitmask == 1){
+						bitstream = (bitstream << 1);
+				   } else {
+						bitstream = (bitstream << 1) | 0x1;
+				   }
+                   checksum=checksum^1;
+                   bitcounter++;                     // only need to count the first 10 bits
                } else {
                   crc=0;
                   break;
@@ -119,36 +121,27 @@ boolean Plugin_010(byte function, char *string) {
       if (RawSignal.Pulses[x+2]*RawSignal.Multiply < 1200 || RawSignal.Pulses[x+2]*RawSignal.Multiply > 1500) return false;
       //==================================================================================
       // perform a checksum check to make sure the packet is a valid RGB control packet
-      // Checksum1: 3rd byte must be 0xFF
-      // Checksum2: xor all odd and all even bits should match the last bit
-      // ----------------------------------
-      if ( (bitstream & 0xff00) != 0xff00 ) {
-         //Serial.println("crc1 error");
-         return false;  
-      }
+      // Checksum: xor all odd and all even bits should match the last bit
       // ----------------------------------
       if (checksum != crc) {
          //Serial.println("crc2 error");
          return false;  
       }
-
-      //Serial.print("RGB Control:");
-      //Serial.print(bitstream, BIN);
-      //Serial.print(" ");
-      //Serial.print(checksum,BIN);
-      //Serial.println();
       //==================================================================================
       // now process the command      
       //==================================================================================
       command = (bitstream) &0xff;                  // command
+	  int id3 = (bitstream >> 8) &0xff;
       bitstream = (bitstream >> 16) &0xffff;        // rolling code
       //==================================================================================
       // Output
       // ----------------------------------
       sprintf(pbuffer, "20;%02X;", PKSequenceNumber++); // Node and packet number 
       Serial.print( pbuffer );
-      Serial.print(F("RGB;"));                       // Label
-      sprintf(pbuffer, "ID=%04x;", bitstream);       // ID    
+      Serial.print(F("TRC02RGB;"));                 // Label
+      sprintf(pbuffer, "ID=%04x", bitstream);       // ID    
+      Serial.print( pbuffer );
+	  sprintf(pbuffer, "%02x;", id3);     
       Serial.print( pbuffer );
       sprintf(pbuffer, "SWITCH=%02x;", command);     
       Serial.print( pbuffer );
@@ -157,12 +150,12 @@ boolean Plugin_010(byte function, char *string) {
       else if (command==0x01) Serial.print(F("OFF;"));
       else if (command==0x02) Serial.print(F("DIM DOWN;"));
       else if (command==0x03) Serial.print(F("DIM UP;"));
-      else if (command==0x06) Serial.print(F("COLORMIX UP;"));
-      else if (command==0x07) Serial.print(F("COLORMIX DOWN;"));
-      else if (command==0x19) Serial.print(F("COLOR RED;"));
-      else if (command==0x29) Serial.print(F("COLOR BLUE;"));
-      else if (command==0x4D) Serial.print(F("COLOR YELLOW;"));
-      else if (command==0x74) Serial.print(F("COLOR GREEN;"));
+      else if (command==0x05) Serial.print(F("COLORMIX UP;"));
+      else if (command==0x04) Serial.print(F("COLORMIX DOWN;"));
+      else if (command==0x87) Serial.print(F("COLOR RED;"));
+      else if (command==0x34) Serial.print(F("COLOR BLUE;"));
+      else if (command==0x78) Serial.print(F("COLOR YELLOW;"));
+      else if (command==0x5D) Serial.print(F("COLOR GREEN;"));
       else {
         sprintf(pbuffer, "SET_LEVEL=%d;", command ); 
         Serial.print( pbuffer );        
@@ -174,3 +167,76 @@ boolean Plugin_010(byte function, char *string) {
       return true;
 }
 #endif // PLUGIN_010
+
+#ifdef PLUGIN_TX_010
+void TRC02_Send(unsigned long address, int command);
+
+boolean PluginTX_010(byte function, char *string) {
+		//10;TRC02RGB;03023c;00;
+        //012345678901234567890123456
+        boolean success=false;
+        if (strncasecmp(InputBuffer_Serial+3,"TRC02RGB;",9) == 0) { // KAKU Command eg.     
+		   TRC02_Send(strtoul(InputBuffer_Serial+12,NULL,16),strtoul(InputBuffer_Serial+19,NULL,16));
+           success=true;
+        }
+        return success;
+}
+          
+void TRC02_Send(unsigned long address, int command) { 
+	int fpulse = 500;
+    int fretrans = 2;          								// Number of code retransmissions
+	byte crc = 0;
+    uint32_t fdatabit;
+    uint32_t fdatamask = 0x80000000;
+    uint32_t fsendbuff;
+
+    digitalWrite(PIN_RF_RX_VCC,LOW);                // Turn off power to the RF receiver 
+    digitalWrite(PIN_RF_TX_VCC,HIGH);               // Enable the 433Mhz transmitter
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+
+    for (int nRepeat = 0; nRepeat <= fretrans; nRepeat++) {
+		crc=0;
+        fsendbuff=address;
+		fsendbuff=(fsendbuff<<8)+command;
+		digitalWrite(PIN_RF_TX_DATA, HIGH);			// start pulse
+		delayMicroseconds(fpulse * 3);
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse);
+        for (int i = 0; i < 32; i++) {              // TRC02 packet is 32 bits + 1 bit crc
+            // read data bit
+            fdatabit = fsendbuff & fdatamask;       // Get most left bit
+            fsendbuff = (fsendbuff << 1);           // Shift left
+            if (fdatabit != fdatamask) {            // Write 0
+				digitalWrite(PIN_RF_TX_DATA, LOW); 
+				delayMicroseconds(fpulse);
+				digitalWrite(PIN_RF_TX_DATA, HIGH);         
+				delayMicroseconds(fpulse);
+				crc += crc^0;
+            } else {                                // Write 1
+				digitalWrite(PIN_RF_TX_DATA, HIGH);
+				delayMicroseconds(fpulse);
+				digitalWrite(PIN_RF_TX_DATA, LOW);         
+				delayMicroseconds(fpulse);
+				crc += crc^1;
+            }			
+        }
+		if (crc==1) {   							// crc pulse
+			delayMicroseconds(fpulse);
+			digitalWrite(PIN_RF_TX_DATA, LOW); 
+			delayMicroseconds(fpulse);
+			digitalWrite(PIN_RF_TX_DATA, HIGH);         
+			delayMicroseconds(fpulse);
+        } else {                   
+			delayMicroseconds(fpulse);
+			digitalWrite(PIN_RF_TX_DATA, HIGH);
+			delayMicroseconds(fpulse);
+			digitalWrite(PIN_RF_TX_DATA, LOW);         
+			delayMicroseconds(fpulse);
+        }	
+    }
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    digitalWrite(PIN_RF_TX_VCC,LOW);                // Turn thew 433Mhz transmitter off
+    digitalWrite(PIN_RF_RX_VCC,HIGH);               // Turn the 433Mhz receiver on
+    RFLinkHW();
+}
+#endif //PLUGIN_TX_010

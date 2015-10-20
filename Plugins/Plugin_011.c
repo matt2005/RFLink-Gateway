@@ -51,7 +51,6 @@
  * 550,250,550,250,550,750,50,250,50; =99
  *
  * 2675,200,600,200,600,700,100,700,100,200,600,700,100,700,100,200,600,700,100,225,600,725,75,225,600,225,575,725,75,225,575,225,575,225,575,725,75,725,75,725,75,725,75,225,575,725,75,225,575,225,575,225,575,225,575,225,575,250,575,250,575,250,575,250,575,250,550,250,550,250,550,250,550,250,550,250,550,250,550,250,575,725,75,250,550,250,550,250,550,250,550,250,550,250,550,750,50,250,50
- 
  \*********************************************************************************************/
 #define HC_PULSECOUNT 100
 
@@ -103,7 +102,7 @@ boolean Plugin_011(byte function, char *string) {
       //==================================================================================
       // Prevent repeating signals from showing up
       //==================================================================================
-      if(SignalHash!=SignalHashPrevious || (RepeatingTimer<millis()+1500) || SignalCRC != bitstream2 ) { 
+      if(SignalHash!=SignalHashPrevious || ((RepeatingTimer+1500)<millis()) || SignalCRC != bitstream2 ) { 
          // not seen the RF packet recently
          SignalCRC=bitstream2;
       } else {
@@ -155,7 +154,7 @@ boolean PluginTX_011(byte function, char *string) {
         //10;HomeConfort;01b523;D3;ON;
         //0123456789012345678901234567
         if (strncasecmp(InputBuffer_Serial+3,"HomeConfort;",12) == 0) { // KAKU Command eg. 
-           if (InputBuffer_Serial[16] != ';') return success;
+           if (InputBuffer_Serial[21] != ';') return success;
           
            InputBuffer_Serial[13]=0x30;
            InputBuffer_Serial[14]=0x78;                            // Get address from hexadecimal value 
@@ -211,12 +210,196 @@ boolean PluginTX_011(byte function, char *string) {
         }
         return success;
 }
+/*
+void HomeConfort_Send(unsigned long data1, unsigned long data2) { 
+    int fpulse  = 270;                              // Pulse width in microseconds
+    int fpulse2 = 710;                              // Pulse width in microseconds
+    int fretrans = 10;                              // Number of code retransmissions
+
+	unsigned long bitstream1 = 0L;
+	unsigned long bitstream2 = 0L;
+    // prepare data to send	
+	for (unsigned short i=0; i<24; i++) {           // reverse data bits
+		bitstream1<<=1;
+		bitstream1|=(data1 & B1);
+		data1>>=1;
+	}
+	for (unsigned short i=0; i<24; i++) {           // reverse data bits
+		bitstream2<<=1;
+		bitstream2|=(data2 & B1);
+		data2>>=1;
+	}
+     // -------------------------------
+     // bitstream1 holds first 24 bits of the RF data, bitstream2 holds last 24 bits of the RF data
+     // -------------------------------
+    // Prepare transmit
+    digitalWrite(PIN_RF_RX_VCC,LOW);                // Turn off power to the RF receiver 
+    digitalWrite(PIN_RF_TX_VCC,HIGH);               // Enable the 433Mhz transmitter
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    // send bits
+    for (int nRepeat = 0; nRepeat <= fretrans; nRepeat++) {
+        data1=bitstream1; 
+        data2=bitstream2; 
+		digitalWrite(PIN_RF_TX_DATA, HIGH);
+		delayMicroseconds(fpulse*10 + (fpulse >> 1));  //335*9=3015 //270*10=2700
+		for (unsigned short i=0; i<24; i++) {
+			switch (data1 & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse * 1);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse2 * 1);  
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse2 * 1);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse * 1);
+					break;
+			}
+			//Next bit
+			data1>>=1;
+		}
+		for (unsigned short i=0; i<24; i++) {
+			switch (data2 & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse * 1);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse2 * 1); // 335*3=1005 260*5=1300  260*4=1040
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse2 * 1);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse * 1);
+					break;
+			}
+			//Next bit
+			data2>>=1;
+		}
+		//Send termination/synchronisation-signal. 
+		//digitalWrite(PIN_RF_TX_DATA, HIGH);
+		//delayMicroseconds(fpulse);
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse * 27); 
+
+        //RawSignal.Pulses[98]=300/RawSignal.Multiply;
+        //RawSignal.Pulses[99]=175/RawSignal.Multiply;
+        //RawSignal.Delay=125;                             // Delay between RF packets
+
+	}
+    // End transmit
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    digitalWrite(PIN_RF_TX_VCC,LOW);                // Turn thew 433Mhz transmitter off
+    digitalWrite(PIN_RF_RX_VCC,HIGH);               // Turn the 433Mhz receiver on
+    RFLinkHW();
+}
+
+void HomeConfort_Send(unsigned long data1, unsigned long data2) { 
+    int fpulse  = 270;                              // Pulse width in microseconds
+    int fpulse2 = 710;                              // Pulse width in microseconds
+    int fretrans = 10;                              // Number of code retransmissions
+
+	unsigned long bitstream1 = 0L;
+	unsigned long bitstream2 = 0L;
+    // prepare data to send	
+	for (unsigned short i=0; i<24; i++) {           // reverse data bits
+		bitstream1<<=1;
+		bitstream1|=(data1 & B1);
+		data1>>=1;
+	}
+	for (unsigned short i=0; i<24; i++) {           // reverse data bits
+		bitstream2<<=1;
+		bitstream2|=(data2 & B1);
+		data2>>=1;
+	}
+     // -------------------------------
+     // bitstream1 holds first 24 bits of the RF data, bitstream2 holds last 24 bits of the RF data
+     // -------------------------------
+    // Prepare transmit
+    digitalWrite(PIN_RF_RX_VCC,LOW);                // Turn off power to the RF receiver 
+    digitalWrite(PIN_RF_TX_VCC,HIGH);               // Enable the 433Mhz transmitter
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    // send bits
+    for (int nRepeat = 0; nRepeat <= fretrans; nRepeat++) {
+        data1=bitstream1; 
+        data2=bitstream2; 
+		digitalWrite(PIN_RF_TX_DATA, HIGH);
+		//delayMicroseconds(fpulse);  //335
+		delayMicroseconds(335);       
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse*10 + (fpulse >> 1));  //335*9=3015 //270*10=2700
+		for (unsigned short i=0; i<24; i++) {
+			switch (data1 & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse * 1);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse2 * 1);  
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse2 * 1);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse * 1);
+					break;
+			}
+			//Next bit
+			data1>>=1;
+		}
+		for (unsigned short i=0; i<24; i++) {
+			switch (data2 & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse * 1);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse2 * 1); // 335*3=1005 260*5=1300  260*4=1040
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse2 * 1);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse * 1);
+					break;
+			}
+			//Next bit
+			data2>>=1;
+		}
+		//Send termination/synchronisation-signal. 
+		digitalWrite(PIN_RF_TX_DATA, HIGH);
+		delayMicroseconds(fpulse);
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse * 27); 
+
+        //RawSignal.Pulses[98]=300/RawSignal.Multiply;
+        //RawSignal.Pulses[99]=175/RawSignal.Multiply;
+        //RawSignal.Delay=125;                             // Delay between RF packets
+
+	}
+    // End transmit
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    digitalWrite(PIN_RF_TX_VCC,LOW);                // Turn thew 433Mhz transmitter off
+    digitalWrite(PIN_RF_RX_VCC,HIGH);               // Turn the 433Mhz receiver on
+    RFLinkHW();
+}
+*/
+/*
+20;E4;DEBUG;Pulses=511;Pulses(uSec)=
+330,2760,180,600,180,600,630,180,630,180,180,600,630,180,630,150,210,600,630,150,210,600,630,180,180,600,180,600,630,180,180,600,180,600,180,600,630,180,630,180,630,180,630,180,180,600,630,180,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,630,180,180,600,180,600,180,600,180,600,210,600,210,600,630,150,210,180,
+270,2760,180,600,180,600,630,180,630,180,180,600,630,180,630,180,180,600,630,180,180,600,630,180,180,600,180,600,630,180,180,600,180,600,180,600,630,180,630,180,630,180,630,180,180,600,630,150,210,600,210,600,210,600,210,600,180,600,180,600,180,600,180,600,180,600,180,600,180,630,180,630,180,630,180,630,180,630,180,600,180,600,630,180,180,600,180,600,180,600,180,600,180,600,180,600,630,180,180,150,     
+270,2760,210,600,210,600,630,150,630,150,210,600,630,180,630,180,180,600,630,180,180,600,630,180,180,630,180,630,630,180,180,630,180,630,180,630,630,180,630,180,630,180,630,180,180,600,630,180,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,210,600,630,150,210,600,210,600,210,600,210,600,180,600,180,600,630,180,180,180,270,2760,180,600,180,600,630,180,630,180,180,600,630,180,630,180,180,600,630,180,180,600,630,180,180,600,180,600,630,180,180,600,180,600,210,600,630,150,630,150,630,150,630,150,210,600,630,180,180,600,180,600,180,600,180,600,180,630,180,630,180,630,180,630,180,630,180,630,180,630,180,600,180,600,180,600,180,600,180,600,180,600,630,180,180,600,180,600,180,600,180,600,180,600,180,600,630,180,180,180,270,2760,210,600,180,600,630,180,630,180,180,630,630,180,630,180,180,630,630,180,180,630,630,180,180,630,180,600,630,180,180,600,180,600,180,600,630,180,630,180,630,180,630,180,180,600,630,180,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,180,600,210,600,210,600,210,600,210,600,210,600,210,600,210,600,210,600,630,180,180,600,180,630,180,630,180,630,180,630,180,630,630,180,180,180,270,2760,180,600,180,600,630,180,630,180,180;
+
+
+20;CA;DEBUG;Pulses=100;Pulses(uSec)=
+    2490,180,630,150,630,600,180,600,180,150,630,600,180,600,180,150,630,630,180,150,630,630,180,150,630,150,630,630,180,150,630,150,630,150,630,630,180,600,180,600,180,600,180,150,630,600,180,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,150,630,630,180,180,60,6990;
+*/
 
 #define PLUGIN_011_RFLOW        270                   // 300
 #define PLUGIN_011_RFHIGH       720                   // 800
 
 void HomeConfort_Send(unsigned long bitstream1, unsigned long bitstream2) { 
-     RawSignal.Repeats=3;                             // Number of RF packet retransmits
+     RawSignal.Repeats=8;                            // Number of RF packet retransmits
      RawSignal.Delay=125;                             // Delay between RF packets
      RawSignal.Number=100;                            // Length
 
@@ -258,3 +441,4 @@ void HomeConfort_Send(unsigned long bitstream1, unsigned long bitstream2) {
      RawSendRF();
 }
 #endif // PLUGIN_TX_011
+

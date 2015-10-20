@@ -23,17 +23,19 @@
  *
  * ELRO HOMEEASY HE842
  * The HE842 remote control sends 3 different protocols.
- * 8  x Method 1 - 28 bit code (58 pulses)
- * 20 x Method 2 - 24 bit code (50 pulses) 
- * 6  x method 3 - HE compatible (116 pulses) See Plugin 15
+ * 8  x Protocol method 1 - 28 bit code (58 pulses)
+ * 20 x Protocol method 2 - 24 bit code (50 pulses) 
+ * 6  x Protocol method 3 - HE compatible (116 pulses) See Plugin 15
+  
  * Method 1 is detected as a 460+ pulse RF packet which we reject.
  * 20;19;DEBUG;Pulses=464;Pulses(uSec)=275,950,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,950,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,950,225,950,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,925,200,4975,200,925,200,925,850,275,200,925,200,925,850,275,200,925,850,275,200,925,200,925,850,275,200,925,200,925,850,275,850,275,200,925,200,925,850,275,200,925,200,925,200,925,850,275,200,925,850,275,850,275,200,925,850,275,200,975,200;
  * -------------------
  * ELRO FLAMINGO FA500
- * The FA500R remote control sends at least 4 different protocols.
- * 4 x Method 1 - 28 bit code (58 pulses) - Same as HE842 Method 1
- * 6 x method 2 - AC compatible (130 pulses) 
- * 5 x method 3 - 24/12 bit code (24 pulses)
+ * The FA500R remote control sends 4 different protocols.
+ * 4 x Protocol method 1 - 28 bit code (58 pulses) - Same as HE842 Method 1
+ * 3 x Protocol method 2 - AC compatible (132 pulses) 
+ * 3 x Protocol method 3 - HE compatible (116 pulses) 
+ * 5 x Protocol method 4 - 24/12 bit code (24 pulses)
  * It appears that the FA500S power switch is only capable to react to the first method!
  * RFLink can only distinguish the 3rd method properly. Method 1 and 2 have to be pulled apart first.
  * This plugin will split the received signal so that method 1 or 2 can be used.
@@ -64,9 +66,8 @@
  * So we break, filter and convert the Home Confort RF packets in this plugin
  \*********************************************************************************************/
 #define OVERSIZED_LIMIT         291  // longest packet is handled by plugin 48
-#define FA500RM3_PulseLength    26
-#define FA500RM1_PulseLength    58
 
+#define PULSE500                500/RAWSIGNAL_SAMPLE_RATE
 #define PULSE1100               1100/RAWSIGNAL_SAMPLE_RATE
 #define PULSE1600               1600/RAWSIGNAL_SAMPLE_RATE
 #define PULSE2000               2000/RAWSIGNAL_SAMPLE_RATE
@@ -76,13 +77,12 @@
 #define PULSE2500               2500/RAWSIGNAL_SAMPLE_RATE
 #define PULSE3000               3000/RAWSIGNAL_SAMPLE_RATE
 #define PULSE5000               5000/RAWSIGNAL_SAMPLE_RATE
+#define PULSE6000               6000/RAWSIGNAL_SAMPLE_RATE
 #define PULSE6500               6500/RAWSIGNAL_SAMPLE_RATE
 
 #ifdef PLUGIN_001
 boolean Plugin_001(byte function, char *string) {
-      byte FAconversiontype=1;      // 0=FA500R to Method 2
-      //                              // 1=FA500R to Method 1
-      byte HEconversiontype=0;      // 0=No conversion, 1=conversion to Elro 58 pulse protocol (same as FA500R Method 1)
+      byte HEconversiontype=1;      // 0=No conversion, 1=conversion to Elro 58 pulse protocol (same as FA500R Method 1)
 
       int i,j;
       // ==========================================================================
@@ -113,7 +113,6 @@ boolean Plugin_001(byte function, char *string) {
       //PROGMEM int temp[]={1725,1100,1650,1100,1650,1100,1650,1100,1650,1100,1650,1100,1625,1125,1625,1125,1625,1125,1625,1100,1625,1100,1625,4150,5675,225,3100,1125,1625,1125,1625,2600,3100,2600,1625,1125,3100,2600,1625,1125,3075,1125,1625,2600,3100,2600,1625,1125,3075,2600,1625,1125,1625,1125,1625,1125,1625,1125,1600,1125,3075,2600,1600,1125,3075,2600,1625,1125,1600,1150,3075,600};
       //20;38;DEBUG;Pulses=66;Pulses(uSec)= v1
       //PROGMEM int temp[]={1725,1075,1675,1075,1675,1075,1675,1075,1675,1050,1700,1050,1675,4125,5725,5075,1650,2575,3125,1100,1625,2575,1600,1150,3175,2500,1700,1050,1625,1150,3125,2550,3150,1075,1650,2550,1650,1100,1575,1175,3100,2575,1625,1125,1650,1075,1675,1075,1650,1125,1575,1175,3100,1100,1600,2600,1625,1125,1650,1100,1625,1125,1575,1175,3100,600};
-
       //20;04;DEBUG;Pulses=50;Pulses(uSec)=
       //PROGMEM int temp[]={300,1020,240,1020,240,1020,240,1020,240,1020,240,1020,240,1020,990,300,240,1020,240,1020,240,1020,240,1020,240,1020,990,270,240,1020,990,300,240,1020,240,1020,240,1020,990,300,240,1020,990,300,240,1020,990,300,240,6990};
       // chuango
@@ -125,12 +124,48 @@ boolean Plugin_001(byte function, char *string) {
       //20;10;DEBUG;Pulses=42;Pulses(uSec)=Chacon: 
       //PROGMEM int temp[]={630,570,1230,540,1230,540,1230,540,1230,570,1230,540,1230,540,1230,540,1230,570,1230,540,1230,540,1230,540,1230,570,1200,540,1200,570,1170,1230,540,570,1200,540,1200,540,1170,1230,540,6990};
       //PROGMEM int temp[]={660,510,1260,510,1260,510,1260,510,1260,540,1260,510,1260,540,1260,540,1230,540,1230,540,1230,540,1230,540,1230,570,1230,540,1230,540,1230,540,1230,570,1230,540,1230,540,1230,540,1230,6990};
+      //PROGMEM int temp[]={120,510,90,510,510,90,510,90,120,510,90,510,510,90,510,90,510,90,90,510,120,510,120,510,510,90,510,90,90,510,510,90,510,90,90,510,90,510,120,510,120,510,120,510,510,90,510,90,120,6240,120};
+      //PROGMEM int temp[]={90,510,510,90,510,90,120,510,510,90,90,510,90,510,510,90,510,90,510,90,120,510,510,90,120,510,510,90,510,90,90,510,90,510,510,90,510,90,510,90,90,510,90,510,510,90,510,90,90,6300,90};
+      //PROGMEM int temp[]={330,360,270,360,270,330,270,360,270,360,270,360,270,330,270,360,270,360,270,360,270,360,270,3960,660,360,270,780,690,360,690,360,660,360,270,780,270,780,270,780,690,360,270,780,270,780,690,360,270,780,660,360,270,780,270,780,690,360,270,780,660,360,270,780,660,360,270,780,660,360,270,780,270,780,690,360,690,360,660,360,270,780,660,360,690,360,660,360,660,360,660,360,270,780,690,360,660,360,660,360,270,780,660,360,270,780,270,780,270,780,690,360,270,780,690,360,690,360,270,780,660,360,690,360,690,360,270,780,660,360,660,360,690,360,690,360,270,780,270,780,660,360,660,360,660,360,270,780,690,360,660,390,660,360,270,6990};
+      // bofu
+      //PROGMEM int temp[]={1200,2370,1560,180,600,210,600,210,600,210,210,600,210,600,600,210,600,210,210,600,600,210,210,600,600,210,600,210,600,180,600,180,600,180,210,600,600,180,600,180,210,600,210,600,180,600,180,600,600,180,600,210,180,600,180,600,180,600,180,600,210,600,210,600,600,180,600,210,210,600,600,210,210,600,600,210,600,210,210,600,210,600,600,180,600};
+      //PROGMEM int temp[]={270,600,210,600,210,600,180,600,180,600,180,630,180,600,180,630,180,600,180,600,180,600,180,600,180,6990};
+      //Alecto
+      //PROGMEM int temp[]={1800,2010,1710,2010,3690,3960,1710,2010,1710,2010,1710,2010,1710,3960,1710,3960,1710,3960,1710,2010,1710,3960,1740,2010,1710,2010,1710,3960,1710,2010,1710,2010,1710,3960,1710,2010,1710,2010,1710,3960,1740,3960,1710,2010,1710,2010,1710,2010,1710,2010,1710,3960,1710,2010,1710,3960,1710,2010,1710,2010,1710,2010,1710,1980,1710,3960,1710,2010,1710,3960,1710,3960,1710,3960,1710,3960,1710,2010,1710,2010,1710,2010,1710,3960,1710,2010,1710,3960,1710,3960,1710,2010,1710,3960,1710,3960,1710,2010,1710,3960,1710,3960,1710,2010,1710,2010,1710,3960,1710,3960,1710,3960,1710,3960,1740,2010,1710,3960,1740,2010,1710,3960,1710,3960,1710,3960,1710,3960,1710,1980,1740,3960,1710,3960,1740,1980,1740,1980,1710,3960,1710,2010,1710,2010,1740,2010,1710,3960,1710,6990};
+      //PROGMEM int temp[]={360,150,600,180,600,510,300,510,300,510,300,510,300,510,300,210,600,210,630,510,300,210,600,540,300,510,300,210,600,210,600,510,300,180,600,510,300,510,300,210,600,540,300,210,600,510,300,210,600,210,600,540,300,510,270,210,600,6990};
+      //PROGMEM int temp[]={1200,2370,1530,180,600,210,600,210,600,210,210,600,210,600,600,210,600,210,210,600,600,210,210,600,600,210,600,180,600,180,600,180,600,180,210,600,600,180,600,180,210,600,180,600,180,600,180,600,600,210,600,210,180,600,180,600,180,600,210,600,210,600,210,600,600,210,600,210,210,600,600,210,210,600,600,210,600,210,210,600,210,600,600,180,600,6990};
+      // perel
+      //PROGMEM int temp[]={420,900,1080,180,360,900,360,900,360,900,1080,180,360,900,1080,210,330,930,1080,210,330,930,330,930,360,930,330,930,330,930,330,930,330,930,330,930,330,930,1080,210,330,930,1080,210,330,930,1080,210,330,6990}; 
+      // Europe
+      //PROGMEM int temp[]={1290,3240,450,3240,450,3240,1230,3240,1230,3240,450,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,450,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,1230,3240,1200,3240,1230,3240,1200,3240,1230,3240,450,6990};
+      //kaku doorbell
+      //PROGMEM int temp[]={300,950,250,950,250,950,950,275,250,950,250,950,250,950,950,275,250,950,950,275,250,950,950,250,250,950,950,275,250,950,250,950,250,950,950,275,250,950,950,250,250,950,950,275,250,950,950,250,250};
+      //rev tristate
+      //PROGMEM int temp[]={330,960,930,270,240,960,930,270,930,270,930,270,240,960,930,270,930,270,930,270,240,960,930,270,240,960,930,270,240,960,240,960,240,930,240,960,240,960,240,960,240,960,240,960,930,270,930,270,240,6990};
+      //PROGMEM int temp[]={270,990,930,270,210,960,930,270,930,270,930,270,210,960,900,270,210,960,900,270,900,270,900,270,210,960,900,270,210,960,210,960,210,960,210,960,210,960,210,960,900,270,900,270,210,960,210,960,210,6990};
+      // lidl 3state
+      //PROGMEM int temp[]={180,930,900,270,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,210,930,870,270,210,930,870,270,210,930,210,930,870,270,900,270,210,6990};
+      // impuls
+      //PROGMEM int temp[]={60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,360,30,360,30,60,330,60,330,60,330,60,330,60,330,60,330,60,330,60,330,60,330,60,330,60,330,360,30,60,330,60,330,60,6990;};
+      //biowin
+      //PROGMEM int temp[]={1200,1860,480,1860,480,3780,480,3780,480,3780,480,3780,480,3780,480,3780,480,3810,480,1890,480,3780,480,1860,450,1860,480,3750,480,3780,480,3780,480,1890,480,1860,480,1860,480,1860,480,1860,480,1860,480,3750,480,1890,480,3780,480,1860,480,1860,480,3750,480,1860,480,1860,480,1860,480,3750,480,1890,450,1860,480,1860,480,3750,480,1860,480,3780,480,3780,480,1860,480,1890,480,6990};
+      //somfy up 88
+      //PROGMEM int temp[]={1200,2490,2400,2490,4710,1200,1170,1200,1170,1200,1170,1200,540,570,510,570,1170,570,510,570,510,540,540,1200,1170,1200,540,570,1170,570,540,570,510,540,540,570,510,570,540,1200,1170,1200,1170,570,510,1200,1170,570,540,1200,540,570,1170,1200,1170,1200,510,540,540,570,1170,570,540,570,510,1200,540,540,540,570,1170,570,540,1200,1170,540,540,570,540,1200,1170,570,510,570,540,1200,510,6990};
+      //somfy down? 84
+      //PROGMEM int temp[]={3540,1140,1110,1140,1110,1140,1140,1200,1170,1200,1170,570,540,570,540,1200,1170,1200,1170,1200,1170,570,510,570,540,1200,510,570,540,570,1170,570,540,1200,1170,570,510,1200,1170,570,540,1200,510,570,1170,1200,1170,1200,510,540,540,540,1170,570,540,570,540,1200,540,540,510,570,1170,570,510,1200,1170,540,540,570,540,1200,1170,540,540,570,540,1200,510,6990};
+      // somfy my 80      
+      //PROGMEM int temp[]={1200,2490,2400,2490,4710,1200,1170,1200,1170,1200,510,540,1170,1200,540,540,1170,1200,540,540,1170,1200,1170,540,540,1200,1170,1200,510,540,1170,540,540,570,540,540,540,570,540,1200,510,570,510,540,540,540,1170,1200,1170,1200,1170,540,540,1200,510,570,510,570,1170,1200,1170,570,510,570,540,540,540,1200,1170,1200,1170,570,540,570,540,1200,1170,570,540,570,540,1200,1170,6990};
+      //PROGMEM int temp[]={270,930,210,930,210,930,870,270,180,930,870,270,180,930,870,270,180,930,840,270,180,930,210,930,210,930,870,270,180,930,870,270,180,930,870,270,180,930,870,270,210,930,180,930,180,930,840,270,180,6990};
+      //Xiron
+      //PROGMEM int temp[]={990,870,900,870,870,390,390,390,390,870,390,390,870,390,390,900,390,390,390,390,870,390,390,390,390,870,390,390,870,390,390,870,390,390,390,390,900,870,390,390,870,870,870,870,870,390,390,870,870,870,390,390,870,870,390,390,870,390,390,390,390,870,390,390,870,390,390,390,390,390,390,390,390,390,390,870,870,870,870,870,870,390,390,390,390,870,870,390,390,870,390,390,870,870,390,390,870,900,390,390,390,390,390,390,30,6990};
       //if (RawSignal.Number==66){
-      //   for (i=0;i<100;i++) {     
+      //   for (i=0;i<160;i++) {     
+      //       //RawSignal.Pulses[1+i]=temp[i]/25;
       //       RawSignal.Pulses[1+i]=temp[i]/RawSignal.Multiply;
       //   }
-      //   RawSignal.Number=42;
+      //   RawSignal.Number=106;
       //}
+      // -
       //if (RawSignal.Number==66){
          //Serial.print("20;01;LaCrosseV2;ID=0606;");         // Label
          // ----------------------------------
@@ -207,9 +242,44 @@ boolean Plugin_001(byte function, char *string) {
       // ==========================================================================
       // End of Signal translation
       // ==========================================================================      
-
+      // ==========================================================================
+      // Beginning of Signal translation for Intertek Unitec Switches/Remotes
+      // ==========================================================================
+      if (RawSignal.Number == 202) {
+         if (RawSignal.Pulses[2] > PULSE2000) {
+            if (RawSignal.Pulses[52] > PULSE2000) {
+               if (RawSignal.Pulses[102] > PULSE2000) {
+                  if (RawSignal.Pulses[1] < PULSE500) {
+                     RawSignal.Number=50;            // New packet length
+                     RawSignal.Pulses[0]=19;         // signal the plugin number that should process this packet
+                     return false;                   // packet detected, conversion done
+                  }
+               }
+            }
+         }
+      }
+      // ==========================================================================
+      // End of Signal translation
+      // ==========================================================================      
+      // ==========================================================================
+      // Beginning of Signal translation for HomeEasy HE844 mode 4 - compatibility mode
+      // ==========================================================================
+      //if (RawSignal.Number == 234) {
+      //   if (HEconversiontype==0) {                 // Reject the entire packet 
+      //      if ((RawSignal.Pulses[2] > PULSE4000) && (RawSignal.Pulses[2+58] > PULSE4000) && (RawSignal.Pulses[2+58+58] > PULSE4000) ){
+      //         RawSignal.Pulses[0]=15;                 // Instruct plugin 3 to skip any packets it might see after this
+      //         RawSignal.Number=0;                     // Kill packet   
+      //         return true;                            // abort processing 
+      //      }
+      //   }
+      //} 
+      // ==========================================================================
+      // End of Signal translation HomeEasy HE842
+      // ==========================================================================      
+      
       // ==========================================================================
       // END plugin 001 if the incoming packet is not oversized and resume normal processing of plugins
+      // there is no need to do all the checks if there never will be a match
       if (RawSignal.Number < OVERSIZED_LIMIT) return false;
       // ==========================================================================
       // ##########################################################################
@@ -223,24 +293,13 @@ boolean Plugin_001(byte function, char *string) {
       if (RawSignal.Number > 330 && RawSignal.Number < 378) {
          int pos1=RawSignal.Number - 130;
          int pos2=RawSignal.Number - 130 - 58;
-         int pos3=RawSignal.Number - 18;
-         //if (RawSignal.Pulses[pos1]*RawSignal.Multiply > 2000 && RawSignal.Pulses[pos2]*RawSignal.Multiply > 4000) {
          if (RawSignal.Pulses[pos1] > PULSE2000 && RawSignal.Pulses[pos2] > PULSE4000) {
-            if (FAconversiontype==0) {              // Convert to Flamingo FA500R Method 2
-                for (i=0;i<130;i++){ 
-                    RawSignal.Pulses[3+i]=RawSignal.Pulses[pos1+1+i];
-                }
-                RawSignal.Number=132;               // New packet length
-                return false;                       // Conversion done, stop plugin 1 and continue with regular plugins
-            } else 
-            if (FAconversiontype==1) {              // Convert to Flamingo FA500R Method 1
-                for (i=0;i<58;i++){
-                    RawSignal.Pulses[1+i]=RawSignal.Pulses[pos2+1+i];
-                }
-                RawSignal.Pulses[0]=RawSignal.Pulses[pos3];  // Trick: use the on/off command from the method 2 (newkaku) packet and pass via Pulses[0]
-                RawSignal.Number=58;                // New packet length
-                return false;                       // Conversion done, stop plugin 1 and continue with regular plugins
+            for (i=0;i<58;i++){
+                RawSignal.Pulses[1+i]=RawSignal.Pulses[pos2+1+i];
             }
+            RawSignal.Pulses[0]=12;             // Data will be processed by plugin 12
+            RawSignal.Number=58;                // New packet length
+            return false;                       // Conversion done, stop plugin 1 and continue with regular plugins
          }
       }
       // ==========================================================================
@@ -261,13 +320,15 @@ boolean Plugin_001(byte function, char *string) {
       // End of Signal Translation
       // ==========================================================================      
       // ==========================================================================
-      // Beginning of Signal translation for HomeEasy HE842
+      // Beginning of Signal translation for HomeEasy HE842/HE852/HE863
       // ==========================================================================
-      if (RawSignal.Number > 460 && RawSignal.Number < 470) {
+      if (RawSignal.Number > 460) { // && RawSignal.Number < 470) {
          if (HEconversiontype==0) {                 // Reject the entire packet 
-            RawSignal.Pulses[0]=15;                 // Instruct plugin 3 to skip any packets it might see after this
-            RawSignal.Number=0;                     // Kill packet   
-            return true;                            // abort processing 
+            if ((RawSignal.Pulses[2] > PULSE4000) && (RawSignal.Pulses[2+58] > PULSE4000) && (RawSignal.Pulses[2+58+58] > PULSE4000) ){
+               RawSignal.Pulses[0]=15;                 // Instruct plugin 3 to skip any packets it might see after this
+               RawSignal.Number=0;                     // Kill packet   
+               return true;                            // abort processing 
+            }
          } else {                                   // Convert to Elro Method 1 (same as FA500 Method 1)
             int pos1=RawSignal.Number - 58;
             //if (RawSignal.Pulses[pos1]*RawSignal.Multiply > 4000) {
@@ -282,121 +343,62 @@ boolean Plugin_001(byte function, char *string) {
       } 
       // ==========================================================================
       // End of Signal translation HomeEasy HE842
-      // ==========================================================================      
+      // ==========================================================================     
+      
+      // **************************************************************************
+      // Full buffer size checks, >>>>>> STATIC checks <<<<<
+      // **************************************************************************
+      
       // ==========================================================================
-      // Beginning of Signal translation for Auriol & Xiron
+      // Beginning of Signal translation for Forrinx
       // ==========================================================================
-     if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
-        for (int offset=0; offset < 74; offset++) {
-            //if (RawSignal.Pulses[offset]*RawSignal.Multiply > 3300) {
-            if (RawSignal.Pulses[offset+74] > PULSE3300
-               && RawSignal.Pulses[offset+74*2] > PULSE3300
-               && ((offset > 0 && RawSignal.Pulses[offset] > PULSE3300)
-               || RawSignal.Pulses[offset+74*3] > PULSE3300)) {
-               for (i=0;i<74;i++){
-                   RawSignal.Pulses[1+i]=RawSignal.Pulses[offset+i+1]; // reorder pulse array
-               }
-               RawSignal.Number=74;                 // New packet length
-               RawSignal.Pulses[0]=46;              // signal the plugin number that should process this packet
-               return false;                        // Conversion done, stop plugin 1 and continue with regular plugins
+      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
+         if ((RawSignal.Pulses[2] > PULSE6000) && (RawSignal.Pulses[2+50] > PULSE6000) && (RawSignal.Pulses[2+50+50] > PULSE6000)) {
+            for (i=0;i<50;i++){
+                RawSignal.Pulses[1+i]=RawSignal.Pulses[3+i]; // reorder pulse array
             }
+            RawSignal.Number=51;                    // New packet length (report 51 and not 50 to avoid handling by other plugins
+            RawSignal.Pulses[0]=76;                 // signal the plugin number that should process this packet
+            return false;                           // packet detected, conversion done
          }
       }
-/*      
+      // ========================================================================== 
+      // ==========================================================================
+      // Beginning of Signal translation for bofu
+      // ==========================================================================
       if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
-         int pos1=74;
-         int pos2=74+74;
-         int pos3=74+74+74;
-         int offset=0;
-         //if (RawSignal.Pulses[pos1]*RawSignal.Multiply > 3300) {
-         if (RawSignal.Pulses[pos1] > PULSE3300) {
-            //if (RawSignal.Pulses[pos2]*RawSignal.Multiply > 3300 && RawSignal.Pulses[pos3]*RawSignal.Multiply > 3300) {
-            if (RawSignal.Pulses[pos2] > PULSE3300 && RawSignal.Pulses[pos3] > PULSE3300) {
-               RawSignal.Number=74;                 // New packet length
-               RawSignal.Pulses[0]=46;              // signal the plugin number that should process this packet
-               return false;                        // Conversion done, stop plugin 1 and continue with regular plugins
+         if ( (RawSignal.Pulses[1] > PULSE4200) && (RawSignal.Pulses[2] > PULSE2000) && (RawSignal.Pulses[3] > PULSE1100) ) {
+            if ( (RawSignal.Pulses[1+86] > PULSE4200) && (RawSignal.Pulses[2+86] > PULSE2000) && (RawSignal.Pulses[3+86] > PULSE1100) ) {
+               RawSignal.Number=85;            // New packet length
+               return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
             }
-         }
-         offset=2;
-         //if (RawSignal.Pulses[offset]*RawSignal.Multiply > 3300) {
-         if (RawSignal.Pulses[offset] > PULSE3300) {
-            //if (RawSignal.Pulses[pos1+offset]*RawSignal.Multiply > 3300 && RawSignal.Pulses[pos2+offset]*RawSignal.Multiply > 3300) {
-            if (RawSignal.Pulses[pos1+offset] > PULSE3300 && RawSignal.Pulses[pos2+offset] > PULSE3300) {
-               for (i=0;i<74;i++){
-                   RawSignal.Pulses[1+i]=RawSignal.Pulses[offset+i+1]; // reorder pulse array
-               }
-               RawSignal.Number=74;                 // New packet length
-               RawSignal.Pulses[0]=46;              // signal the plugin number that should process this packet
-               return false;                        // Conversion done, stop plugin 1 and continue with regular plugins
-            }
-         }
-         offset=4;
-         //if (RawSignal.Pulses[offset]*RawSignal.Multiply > 3300) {
-         if (RawSignal.Pulses[offset] > PULSE3300) {
-            //if (RawSignal.Pulses[pos1+offset]*RawSignal.Multiply > 3300 && RawSignal.Pulses[pos2+offset]*RawSignal.Multiply > 3300) {
-            if (RawSignal.Pulses[pos1+offset] > PULSE3300 && RawSignal.Pulses[pos2+offset] > PULSE3300) {
-               for (i=0;i<74;i++){
-                   RawSignal.Pulses[1+i]=RawSignal.Pulses[offset+i+1]; // reorder pulse array
-               }
-               RawSignal.Number=74;                 // New packet length
-               RawSignal.Pulses[0]=46;              // signal the plugin number that should process this packet
-               return false;                        // Conversion done, stop plugin 1 and continue with regular plugins
-            }
+         } 
+      } 
+      // ==========================================================================
+      
+      // **************************************************************************
+      // Full buffer size checks, >>>> SCANNING checks <<<<<  sorted by packet size
+      // **************************************************************************
+      
+      // ==========================================================================
+      // Beginning of Signal translation for Silvercrest Doorbell
+      // ==========================================================================
+      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
+         for (j=2;j<114;j++) {  // Only check twice the total RF packet length we are looking for
+             if (RawSignal.Pulses[j] > PULSE1100) {  // input is going to fast skip to where new part is going to start
+                if (j+114 > RAW_BUFFER_SIZE-1) break; // cant be the packet we look for
+                if ( (RawSignal.Pulses[j+114] > PULSE1100) && (RawSignal.Pulses[j+114+114] > PULSE1100) && (RawSignal.Pulses[j+114+114+114] > PULSE1100) ) { // first long delay found, make sure we have another at the right position               
+                    for (i=0;i<114;i++){
+                        RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
+                    }
+                    RawSignal.Number=114;            // New packet length
+                    RawSignal.Pulses[0]=75;         // signal the plugin number that should process this packet
+                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
+                }
+             }
          }
       }
-      */
       // ==========================================================================
-      // End of Signal Translation
-      // ==========================================================================      
-      // ==========================================================================
-      // Beginning of Signal translation for SelectPlus
-      // ==========================================================================
-      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
-         int pos1=0;
-         int pos2=0;
-         for (j=2;j<36;j++) {  // Only check the total RF packet length we are looking for
-             //if (RawSignal.Pulses[j]*RawSignal.Multiply > 2500) {  // input is going to fast skip to where new part is going to start
-             if (RawSignal.Pulses[j] > PULSE5000) {  // input is going to fast skip to where new part is going to start
-                if (j+36 > RAW_BUFFER_SIZE-1) return false; 
-                //if ( (RawSignal.Pulses[j+26]*RawSignal.Multiply > 2500) && (RawSignal.Pulses[j+26]*RawSignal.Multiply < 3000) && (RawSignal.Pulses[j+26+26]*RawSignal.Multiply > 2500) ) { // first long delay found, make sure we have another at the right position               
-                if ( (RawSignal.Pulses[j+36] > PULSE5000) && (RawSignal.Pulses[j+36+36] > PULSE5000) ) { // first long delay found, make sure we have another at the right position               
-                    for (i=0;i<36;i++){
-                        RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
-                    }
-                    RawSignal.Number=36;            // New packet length
-                    RawSignal.Pulses[0]=70;         // signal the plugin number that should process this packet
-                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
-                }
-             } 
-         }
-      } 
-      // ==========================================================================
-      // End of Signal Translation
-      // ==========================================================================      
-      // ==========================================================================
-      // Beginning of Signal translation for Byron Doorbell
-      // ==========================================================================
-      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
-         for (j=2;j<90 /*RawSignal.Number*/;j++) {  // Only check twice the total RF packet length we are looking for
-             // Byron SX
-             //if (RawSignal.Pulses[j]*RawSignal.Multiply > 2500) {  // input is going to fast skip to where new part is going to start
-             if (RawSignal.Pulses[j] > PULSE2500) {  // input is going to fast skip to where new part is going to start
-                if (j+26 > RAW_BUFFER_SIZE-1) return false; 
-                //if ( (RawSignal.Pulses[j+26]*RawSignal.Multiply > 2500) && (RawSignal.Pulses[j+26]*RawSignal.Multiply < 3000) && (RawSignal.Pulses[j+26+26]*RawSignal.Multiply > 2500) ) { // first long delay found, make sure we have another at the right position               
-                if ( (RawSignal.Pulses[j+26] > PULSE2500) && (RawSignal.Pulses[j+26] < PULSE3000) && (RawSignal.Pulses[j+26+26] > PULSE2500) ) { // first long delay found, make sure we have another at the right position               
-                    for (i=0;i<26;i++){
-                        RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
-                    }
-                    RawSignal.Number=26;            // New packet length
-                    RawSignal.Pulses[0]=72;         // signal the plugin number that should process this packet
-                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
-                }
-             } 
-         }
-      } 
-      // ==========================================================================
-      // End of Signal translation
-      // ==========================================================================      
       // ==========================================================================
       // Beginning of Signal translation for Home Confort Switches/Remotes
       // ==========================================================================
@@ -415,7 +417,7 @@ boolean Plugin_001(byte function, char *string) {
              if (RawSignal.Pulses[j] > PULSE4000) {       
                 //if (RawSignal.Pulses[j+1]*RawSignal.Multiply > 2000) {  
                 if (RawSignal.Pulses[j+1] > PULSE2000) {  
-                   if ( (j+98) > RawSignal.Number) return false;                  // cant be the packet we are looking for
+                   if ( (j+98) > RawSignal.Number) break;             // cant be the packet we are looking for
                    //if ( (RawSignal.Pulses[j+100]*RawSignal.Multiply > 4000) && (RawSignal.Pulses[j+101]*RawSignal.Multiply > 2000) ) { // This could be a Home Confort packet               
                    if ( (RawSignal.Pulses[j+100] > PULSE4000) && (RawSignal.Pulses[j+101] > PULSE2000) ) { // This could be a Home Confort packet               
                       for (i=0;i<100;i++){
@@ -430,37 +432,34 @@ boolean Plugin_001(byte function, char *string) {
          }
       } 
       // ==========================================================================
-      // End of Signal translation
-      // ==========================================================================    
       // ==========================================================================
-      // Beginning of Signal translation for Silvercrest Doorbell
+      // Beginning of Signal translation for Auriol & Xiron
       // ==========================================================================
       if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
-         for (j=2;j<114;j++) {  // Only check twice the total RF packet length we are looking for
-             if (RawSignal.Pulses[j] > PULSE1100) {  // input is going to fast skip to where new part is going to start
-                if (j+114 > RAW_BUFFER_SIZE-1) return false; 
-                if ( (RawSignal.Pulses[j+114] > PULSE1100) && (RawSignal.Pulses[j+114+114] > PULSE1100) && (RawSignal.Pulses[j+114+114+114] > PULSE1100) ) { // first long delay found, make sure we have another at the right position               
-                    for (i=0;i<114;i++){
-                        RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
-                    }
-                    RawSignal.Number=114;            // New packet length
-                    RawSignal.Pulses[0]=75;         // signal the plugin number that should process this packet
-                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
+         for (int offset=0; offset < 74; offset++) {
+             //if (RawSignal.Pulses[offset]*RawSignal.Multiply > 3300) {
+             if (RawSignal.Pulses[offset+74] > PULSE3300
+                && RawSignal.Pulses[offset+74*2] > PULSE3300
+                && ((offset > 0 && RawSignal.Pulses[offset] > PULSE3300)
+                || RawSignal.Pulses[offset+74*3] > PULSE3300)) {
+                for (i=0;i<74;i++){
+                    RawSignal.Pulses[1+i]=RawSignal.Pulses[offset+i+1]; // reorder pulse array
                 }
+                RawSignal.Number=74;                 // New packet length
+                RawSignal.Pulses[0]=46;              // signal the plugin number that should process this packet
+                return false;                        // Conversion done, stop plugin 1 and continue with regular plugins
              }
          }
       }
       // ==========================================================================
-      // End of Signal translation
-      // ==========================================================================    
       // ==========================================================================
-      // Beginning of Signal translation for Oregon MSR939 / NR868
+      // Beginning of Signal translation for Oregon
       // ==========================================================================
       if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
          for (j=50;j<104;j++) {  // Only check the total RF packet length we are looking for
              //if (RawSignal.Pulses[j]*RawSignal.Multiply > 2500) {  // input is going to fast skip to where new part is going to start
              if (RawSignal.Pulses[j] > PULSE1600) {  // input is going to fast skip to where new part is going to start
-                if (j+52 > RAW_BUFFER_SIZE-1) return false; // check for overflow
+                if (j+52 > RAW_BUFFER_SIZE-1) break; // check for overflow, cant be the packet we look for
                 byte x=0;                
                 if ( (RawSignal.Pulses[j+52] > PULSE1600) && (RawSignal.Pulses[j+52+52] > PULSE1600) && (RawSignal.Pulses[j+52+52+52] > PULSE1600) ) x=2;
                 if ( (RawSignal.Pulses[j+50] > PULSE1600) && (RawSignal.Pulses[j+50+50] > PULSE1600) && (RawSignal.Pulses[j+50+50+50] > PULSE1600) ) x=1;
@@ -476,6 +475,53 @@ boolean Plugin_001(byte function, char *string) {
          }
       } 
       // ==========================================================================
+      // ==========================================================================
+      // Beginning of Signal translation for SelectPlus
+      // ==========================================================================
+      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
+         for (j=2;j<37;j++) {  // Only check the total RF packet length we are looking for
+             //if (RawSignal.Pulses[j]*RawSignal.Multiply > 2500) {  // input is going to fast skip to where new part is going to start
+             if (RawSignal.Pulses[j] > PULSE5000) {  // input is going to fast skip to where new part is going to start
+                if (j+36 > RAW_BUFFER_SIZE-1) break;      // cant be the packet we look for 
+                //if ( (RawSignal.Pulses[j+26]*RawSignal.Multiply > 2500) && (RawSignal.Pulses[j+26]*RawSignal.Multiply < 3000) && (RawSignal.Pulses[j+26+26]*RawSignal.Multiply > 2500) ) { // first long delay found, make sure we have another at the right position               
+                if ( (RawSignal.Pulses[j+36] > PULSE5000) && (RawSignal.Pulses[j+36+36] > PULSE5000) ) { // first long delay found, make sure we have another at the right position               
+                    if (j != 36) {               
+                       for (i=0;i<36;i++){
+                           RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
+                       }
+                    }
+                    RawSignal.Number=36;            // New packet length
+                    RawSignal.Pulses[0]=70;         // signal the plugin number that should process this packet
+                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
+                }
+             } 
+         }
+      } 
+      // ==========================================================================
+      // ==========================================================================
+      // Beginning of Signal translation for Byron Doorbell
+      // ==========================================================================
+      if (RawSignal.Number == RAW_BUFFER_SIZE-1) {
+         for (j=2;j<90 /*RawSignal.Number*/;j++) {  // Only check twice the total RF packet length we are looking for
+             // Byron SX
+             //if (RawSignal.Pulses[j]*RawSignal.Multiply > 2500) {  // input is going to fast skip to where new part is going to start
+             if (RawSignal.Pulses[j] > PULSE2500) {  // input is going to fast skip to where new part is going to start
+                if (j+26 > RAW_BUFFER_SIZE-1) break;  // cant be the packet we look for
+                //if ( (RawSignal.Pulses[j+26]*RawSignal.Multiply > 2500) && (RawSignal.Pulses[j+26]*RawSignal.Multiply < 3000) && (RawSignal.Pulses[j+26+26]*RawSignal.Multiply > 2500) ) { // first long delay found, make sure we have another at the right position               
+                if ( (RawSignal.Pulses[j+26] > PULSE2500) && (RawSignal.Pulses[j+26] < PULSE3000) && (RawSignal.Pulses[j+26+26] > PULSE2500) ) { // first long delay found, make sure we have another at the right position               
+                    for (i=0;i<26;i++){
+                        RawSignal.Pulses[1+i]=RawSignal.Pulses[j+1+i]; // reorder pulse array
+                    }
+                    RawSignal.Number=26;            // New packet length
+                    RawSignal.Pulses[0]=72;         // signal the plugin number that should process this packet
+                    return false;                   // Conversion done, stop plugin 1 and continue with regular plugins
+                }
+             } 
+         }
+      } 
+      // ==========================================================================
+
+      // ==========================================================================
       // End of Signal translation
       // ==========================================================================    
       if (RawSignal.Number > OVERSIZED_LIMIT) {     // unknown and unsupported long packet (290 is the max. pulse length used at the Oregon plugin)
@@ -486,6 +532,47 @@ boolean Plugin_001(byte function, char *string) {
 }
 #endif //PLUGIN_001
 /*********************************************************************************************\
+167 5010
+77  2310
+52  1560
+
+161 
+77
+52
+
+0137
+77
+52
+161
+77
+52
+169
+78
+52
+161
+77
+52
+0137
+77
+52
+161
+77
+52
+
+
+20;08;DEBUG;Pulses=511;Pulses(uSec)=
+
+5010,2340,1560,210,270,510,270,510,270,540, 9
+270,510,270,510,270,510,270,510,270,510, 20
+270,510,270,510,270,510,270,510,270,510, 30
+270,510,270,510,270,510,600,210,270,510, 4
+270,510,270,510,270,540,270,540,600,210, 5 
+600,210,600,210,270,510,270,540,270,540, 6
+270,510,270,510,270,510,270,510,600,210, 69
+600,210,600,210,600,210,600,210,600,210, 79
+270,510,270,510,600,210,4830,2310,1560,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,540,270,540,270,510,270,510,270,510,270,540,270,540,270,510,270,510,600,210,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,600,210,600,210,600,210,270,510,270,540,600,210,4830,2310,1560,210,270,510,270,510,270,510,270,540,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,600,210,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,270,540,270,540,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,600,210,600,210,600,210,270,510,270,510,600,210,4830,2310,1560,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,540,270,540,270,540,270,510,270,510,270,510,270,510,270,540,270,540,600,210,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,600,210,600,210,600,210,270,510,270,510,600,210,4830,2310,1560,210,270,540,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,600,210,270,510,270,510,270,510,270,510,270,540,600,210,600,210,600,210,270,510,270,510,270,510,270,540,270,540,270,510,270,510,600,210,600,210,600,210,600,210,600,210,600,210,270,510,270,510,600,210,4830,2310,1560,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,510,270,540,270,540,270,510,270,510,270,510,270,540,270,540,270,510,600,210,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,270,510,270,510,270,510,270,510,270,510,270,510,270,510,600,210,600,210,600,210,600,210,600,210,600,210,270;
+
+
 Plugin  Pulselength
 ------  -----------
 002     102-104
@@ -507,7 +594,8 @@ Plugin  Pulselength
 032     74-78
 034     124-284
 035     96
-050     58
+040     58
+041     92/162/122/132
 042     48-56
 043     88
 044     82
@@ -527,112 +615,3 @@ Plugin  Pulselength
 090     194
 100     160 & 164-176 
 \*********************************************************************************************/
-/*
-selectplus wit
-20;04;DEBUG;Pulses=511;Pulses(uSec)=350,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,275,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,300,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,275,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,300,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,300,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000;
-20;05;DEBUG;Pulses=511;Pulses(uSec)=325,250,925,275,925,250,925,275,925,250,925,275,925,
-14
-6375,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,275,975,275,975,300,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,300,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300;
-20;06;DEBUG;Pulses=511;Pulses(uSec)=225,950,225,275,925,950,225,950,250,950,225,275,925,950,250,1000,250,275,975,1025,250,300,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1025,250,300,975,1000,250,275,975,300,975,275,975,300,975,300,975,275,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,300,975,275,975,300,975,275,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1025,250,275,975,1000,250,300,975,275,975,300,975,275,975,300,975,275,975,50,250,1000,250,1025,250,300,975,1000,250,1000,250,1025,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,300,975,300,975,300,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1025,250,1000,250,300,975,1000,250,275,975,275,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,300,975,275,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1025,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1025,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,300,975,300,975,300,975,25,250,1000,250,1000,250,275,975,1000;
-20;07;DEBUG;Pulses=406;Pulses(uSec)=1000,275,925,275,925,275,925,275,925,6275,250,1000,250,1000,250,275,975,1000,250,1000,250,1025,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,300,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,50,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,275,975,275,975,275,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,300,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,275,975,275,975;
-
-20;08;DEBUG;Pulses=511;Pulses(uSec)=25,350,250,1000,250,1000,250,275,975,1025,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,300,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,300,975,275,975,275,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1000,250,300,975,1025,250,1000,250,300,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1025,250,275,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,300,975,300,975,300,975,275,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1025,250,1025,250,1000,250,300,975,1025,250,1000,250,300,975,1025,250,300,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,300,975,300,975,275,975,300,975,275,975,300,975,50,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1025,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000;
-20;09;DEBUG;Pulses=511;Pulses(uSec)=300,275,925,275,925,250,925,275,925,275,925,275,925,6375,250,1000,250,1025,250,275,975,1025,250,1000,250,1025,250,275,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,300,975,275,975,300,975,275,975,50,250,1000,250,1025,250,275,975,1000,250,1025,250,1000,250,300,975,1025,250,1000,250,275,975,1025,250,300,975,275,975,300,975,275,975,300,975,275,975,50,250,1000,250,1000,250,275,975,1025,250,1000,250,1000,250,300,975,1000,250,1025,250,300,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1025,250,300,975,1025,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,300,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,300,975,275,975,300,975,300,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1025,250,1025,250,275,975,1025,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1025,250,1025,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1025,250,300,975,275,975,300,975,300,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1025,250,1000,250,300,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1025,250,1000,250,1000,250,300,975,1025,250,1000,250,275,975,1000,250,300,975,275,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1025,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300;
-20;0A;DEBUG;Pulses=511;Pulses(uSec)=225,950,225,250,925,950,225,950,250,950,225,275,925,950,250,1000,250,300,975,1025,250,300,975,300,975,300,975,275,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1025,250,275,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,275,975,1000,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1025,250,1000,250,275,975,1000,250,1025,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,300,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1025,250,1000,250,300,975,1025,250,1000,250,300,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1025,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1000,250,1025,250,275,975,1025,250,1000,250,1025,250,300,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1025,250,275,975,1000,250,1000,250,1000,250,300,975,1025,250,1000,250,300,975,1025,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1025,250,1000,250,275,975,1025,250,1000,250,300,975,1000,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1025,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1025,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1025,250,1025,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1025,250,275,975,1025,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1025;
-20;0B;DEBUG;Pulses=406;Pulses(uSec)=1000,275,925,275,900,275,925,275,900,6275,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1025,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,300,975,275,975,300,975,275,975,300,975,50,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,300,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1025,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1025,250,300,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1025,250,300,975,275,975,300,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1025,250,300,975,300,975,275,975,300,975,275,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1025,250,1000,250,275,975,1000,250,1000,250,275,975,1025,250,275,975,300,975,275,975,300,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1025,250,1000,250,275,975,1025,250,300,975,275,975,300,975,275,975,300,975,300,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,300,975,1000,250,300,975,300,975,300,975,300,975,275,975,300,975;
-
-
-20;06;DEBUG;Pulses=511;Pulses(uSec)=300,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,1000,275,975,275,975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,1000,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,1000,275,975,275,975,275,975,25,275,1000,250,1000,275,275,1000,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,1000,1000,250,275,975,275,975,275,975,275,1000,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,1000,1000,275,1000,250,275,1000,1000,275,275,975,275,1000,275,1000,275,975,275,975,275,1000,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,1000,275,975,275,975,275,1000,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,1000,1000,275,275,975,275,1000,275,1000,275,975,275,1000,275,1000,25,275,1000,250,1000,275,275,1000,1000,275,1000,275,1000,250,275,1000,1000,250,1000,275,275,975,1000,275,275,1000,275,1000,275,1000,275,1000,275,1000,275,975,25,275,1000,250,1000,275;
-20;07;DEBUG;Pulses=511;Pulses(uSec)=250,275,925,250,950,250,925,6125,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,250,275,1000,1000,275,1000,250,275,975,1000,250,275,975,275,1000,275,975,275,1000,275,1000,275,1000,25,250,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,1000,1000,275,1000,250,275,1000,1000,275,275,1000,275,1000,275,1000,275,1000,275,975,275,1000,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,1000,275,975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,1000,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,1000,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,1000,1000,275,275,975,275,975,275,975,275,1000,275,975,275,975,25,275,1000,250,1000,275,275,1000,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,1000,1000,250,275,975,275,975,275,975,275,975,275,975,275,1000,25,275,1000,275,1000,250,275,1000,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,1000,1000,250,275,1000,275,975,275,975,275,975,275,1000,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,275,1000,275,275,975,1000,275,1000,250,275,1000,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,1000,1000,275,275,975,275,1000,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,250,1000,275,275,1000,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,1000,275,975,275,1000,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,1000,275,975,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,1000,275,975,275,1000,275,975,25,275,1000,275,1000,250,275,1000,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,1000,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,1000,275,975,275,975,275,975,275,1000,275,975;
-20;08;DEBUG;Pulses=511;Pulses(uSec)=325,250,925,950,250,250,925,275,925,275,925,275,925,275,950,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,300,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,300,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,275,975,275,975,275,975,275,975,50,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,300,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975;
-20;09;DEBUG;Pulses=396;Pulses(uSec)=325,950,250,950,250,275,925,950,250,950,250,950,225,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,1000,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,1000,275,975,275,975,25,250,1000,275,1000,250,275,1000,1000,275,1000,275,1000,275,275,1000,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,1000,275,975,275,975,25,250,1000,275,1000,275,275,1000,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,1000,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,1000,275,975,275,1000,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,1000,275,975,275,1000,275,975,275,1000,275,975,600;
-
-350,
-5775,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1050,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1050,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,
-5800,975,1025,250,1025;
-
-B)  1000,1000,225,1000,225,1000,225,300,900,300,900,300,900,300,900,1000,225,1000,225,300,925,300,900,1000,225,1000,225,275,900,300,900,300,900,300,900;
-W)  325,950,250,950,250,250,925,950,250,950,250,950,250,275,925,950,250,950,250,250,925,950,250,275,925,250,925,275,925,250,925,275,925,275,925;
-
-     300,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,250,1000,275,1000,250,275,975,1000,275,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,1000,275,975,275,
-     975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,1000,275,975,275,975,275,
-     975,25,275,1000,250,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,1000,275,975,275,975,275,
-     975,25,275,1000,250,1000,275,275,1000,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,
-     975,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,1000,1000,250,275,975,275,975,275,975,275,1000,275,975,275,
-     975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,1000,1000,275,1000,250,275,1000,1000,275,275,975,275,1000,275,1000,275,975,275,975,275,
-     1000,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,1000,275,975,275,975,275,1000,275,975,275,
-     975,25,275,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,1000,1000,275,275,975,275,1000,275,1000,275,975,275,1000,275,1000,25,275,1000,250,1000,275,275,1000,1000,275,1000,275,1000,250,275,1000,1000,250,1000,275,275,975,1000,275,275,1000,275,1000,275,1000,275,1000,275,1000,275,975,25,275,1000,250,1000,275;
-
-
-selectplus zwart
-20;13;DEBUG;Pulses=511;Pulses(uSec)=350,5775,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1050,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1050,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025;
-20;14;DEBUG;Pulses=511;Pulses(uSec)=1000,275,925,975,225,975,250,275,925,275,925,275,925,300,950,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1050,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,1000,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025;
-20;15;DEBUG;Pulses=511;Pulses(uSec)=1000,975,225,975,225,975,225,275,925,275,925,300,950,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,1000,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,1000,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,1000,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025;
-20;16;DEBUG;Pulses=410;Pulses(uSec)=925,975,250,975,225,275,925,275,925,275,925,275,925,5750,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975;
-
-20;17;DEBUG;Pulses=511;Pulses(uSec)=325,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,1000,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025;
-20;18;DEBUG;Pulses=511;Pulses(uSec)=950,275,925,975,225,975,225,275,925,275,925,275,925,275,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,1000,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,1000,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025;
-20;19;DEBUG;Pulses=511;Pulses(uSec)=1000,975,225,975,225,975,225,275,925,275,925,275,950,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,1000,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,1000,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025;
-20;1A;DEBUG;Pulses=410;Pulses(uSec)=1000,975,225,975,225,275,925,275,925,275,925,275,925,5775,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1050,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,1000,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,1000,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975;
-
-
-0;56;DEBUG;Pulses=98;Pulses(uSec)=1050,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,600;
-20;57;DEBUG;Pulses=50;Pulses(uSec)=400,450,825,925,350,450,350,425,350,425,350,450,825,925,825,425,350,450,350,925,850,925,350,425,850,925,850,925,350,425,825,425,350,925,825,450,350,450,350,925,850,925,350,425,375,425,350,425,350,225;
-20;58;DEBUG;Pulses=40;Pulses(uSec)=900,925,825,925,825,450,350,425,350,925,350,425,350,450,350,425,350,425,350,450,850,925,350,425,350,425,350,425,350,425,850,925,825,425,350,425,350,925,850,325;
-20;59;DEBUG;Pulses=30;Pulses(uSec)=50,400,325,850,800,875,325,400,325,400,350,400,325,400,350,400,800,875,350,450,350,450,825,925,850,925,850,925,825,500;
-20;5A;DEBUG;Pulses=50;Pulses(uSec)=900,925,850,425,350,425,350,925,350,425,350,425,350,425,350,425,350,450,825,925,350,450,350,425,350,425,350,450,825,925,850,425,350,425,350,925,850,925,350,425,850,925,850,900,350,425,850,900,350,125;
-20;5B;DEBUG;Pulses=139;Pulses(uSec)=750,1500,1200,925,1225,925,1225,950,400,925,1225,950,400,925,1200,925,1200,925,1225,925,1225,925,1200,925,1200,950,400,950,1200,950,1200,925,1225,925,425,950,425,950,1200,925,1225,925,425,950,400,950,425,925,1200,925,425,950,1200,925,1200,925,1225,925,400,925,1350,825,400,950,1200,950,400,525,950,800,475,875,1200,250,225,275,1000,325,1225,75,2425,600,700,650,625,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,500,3725,750,1225,375,225,150,1225,250,1075,200,2425,475,425,925,1225,925,1225,75,2075;
-20;5C;DEBUG;Pulses=47;Pulses(uSec)=2475,650,1200,925,1200,925,2950,750,1200,375,250,125,1200,250,1100,175,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,400,1225;
-20;5D;DEBUG;Pulses=96;Pulses(uSec)=325,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,300,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,300,975,1000,250,1000,250,275,975,1000,250,275,975,300,975,300,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,275,975,275,975,300,975,600;
-20;5E;RFDEBUG=ON;
-20;5F;DEBUG;Pulses=511;Pulses(uSec)=1025,1075,225,1075,225,1050,225,350,950,350,950,325,950,325,950,1050,225,1075,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1075,225,325,950,325,950,325,950,325,950,1075,225,1050,225,325,950,325,950,1075,225,1050,225,325,950,325,950,350,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1075,225,1050,225,325,950,325,950,1075,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1075,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1075,225,1075,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,350,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1075,225,1075,225,1050,225,325,950,325,950,350,950,325,950,1050,225,1050,225,325,950,325,950,1075,225,1075,225,325,950,325,950,325,950,350,950,5825,950,1075,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1075,225,1050,225,325,950,325,950,1050,225,1050,225,350,950,325,950,325,950,325,950,5825,950,1075,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1075,200,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1075,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1075,225,1075,200,325,950,325,950,1050,225,1050,225,325,950,350,950,325,950,325,950,5825,950,1075,225,1075,200,1075,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1075,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1075,225,1050,225,1050,225;
-20;60;DEBUG;Pulses=511;Pulses(uSec)=225,1000,225,1000,200,300,900,300,900,300,900,300,900,5750,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950,325,950,325,950,325,950,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,300,975,325,950,1050,225,1050,225,325,950,325,950,325,975,300,975,5825,950,1050,225,1050,225,1050,225,325,975,325,975,325,950,325,975,1050,225,1050,225,325,950,325,975,1050,225,1050,225,325,950,325,950,325,975,300,975,5800,975,1050,225,1050,225,1050,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1050,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,1000,300,975,300,1000,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,1000,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1050,225,1050,225,325,950,325,950,325,950,325,950,5800,975,1050,225,1050,225,1050,225,325,950,325,975,325,950,325,975,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,975,325,950,325,950,325,975,5825,950,1050,225,1050,225,1050,225,325,975,325,950,325,975,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,975,325,950,325,950,300,975,5825,975,1050,225,1050,250,1050,225,325,975,325,950,325,975,300,975,1050,225,1050,225,325,950,325,950,1050,225,1050,225,300,975,325,975,325,950,325,975,5825,950,1050,225,1050,225,1050,225,325,950,325,950,325,950,325,950,1050,225,1050,225,325,950,325,950,1050,225,1050,225,325,950;
-20;61;DEBUG;Pulses=511;Pulses(uSec)=300,975,225,975,225,300,925,300,925,275,925,300,925,1000,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1050,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975;
-20;62;DEBUG;Pulses=408;Pulses(uSec)=300,975,225,275,925,275,925,275,925,275,925,5675,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1050,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1050,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,5800,975,1025,250,1025,250,1025,250,300,975,300,975,300,975,300,975,1025,250,1025,250,300,975,300,975,1025,250,1025,250,300,975,300,975,300,975,300,975,600;
-20;63;DEBUG;Pulses=511;Pulses(uSec)=375,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,250,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,250,1000,275,275,1000,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,1000,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,1000,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,275;
-20;64;DEBUG;Pulses=511;Pulses(uSec)=1000,275,925,275,925,250,925,275,925,250,925,6325,275,1000,250,1000,275,275,1000,1000,275,1000,250,1000,275,275,1000,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,1000,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,1000,275,975,275,1000,275,975,25,275,1000,275,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,1000,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,275,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,250,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975;
-20;65;DEBUG;Pulses=511;Pulses(uSec)=325,950,250,950,250,250,925,950,250,950,225,275,925,975,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,275,1000,250,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,275,1000,275,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,275,1000,275,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,275,275,975,1000,250,1000,275,1000,250,275,975;
-20;66;DEBUG;Pulses=400;Pulses(uSec)=800,275,925,6100,250,950,250,1000,250,275,975,1000,275,1000,250,1000,250,275,975,1000,250,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,250,1000,275,1000,250,275,975,1000,275,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,275,1000,275,275,975,1000,250,1000,250,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,250,275,975,1000,275,1000,250,1000,250,275,975,1000,275,1000,275,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,275,1000,250,275,975,1000,275,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,275,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,300,975,275,975,300,975,300,975,300,975,275,975,25,275,1000,250,1000,250,300,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,275,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,250,275,975,1000,250,1000,250,300,975,1000,250,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,275,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,275,1000,275,275,975,1000,275,1000,250,1000,250,275,975,1000,275,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,25,250,1000,250,1000,250,275,975,1000,250,1000,250,1000,275,275,975,1000,250,1000,275,275,975,1000,275,275,975,275,975,275,975,275,975,275,975,275,975,600;
-20;67;DEBUG;Pulses=126;Pulses(uSec)=975,925,850,925,850,450,350,425,350,925,325,450,350,450,850,925,850,450,350,925,825,450,350,925,350,425,825,925,825,450,350,450,350,925,850,925,350,450,850,925,825,925,350,425,850,425,350,925,350,450,825,925,350,425,350,425,350,425,825,450,350,925,350,425,825,450,350,425,350,425,350,425,350,925,850,925,825,425,350,425,350,925,825,425,350,925,350,425,350,425,825,925,825,925,850,925,825,925,350,450,350,450,325,450,825,925,825,450,350,925,825,925,850,925,825,450,350,450,350,450,350,450,350,925,350,425;
-
-
-Impuls
-20;20;DEBUG;Pulses=250;Pulses(uSec)=
-180,330,390,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,60,330,60,330,360,30,60,4710,
-60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,60,330,60,330,360,30,60,4710,
-60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,390,30,60,330,360,30,60,330,60,330,60,330,360,30,60,4710,
-60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,390,30,60,330,360,30,60,330,60,330,60,330,360,30,60,4710,
-60,330,360,30,60,330,360,30,60,330,390,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,360,30,60,330,60,330,60,330,360,30,60,6990;
-
-20;05;DEBUG;Pulses=511;Pulses(uSec)=
-450,60,390,60,390,60,390,60,60,420,390,60,390,60,390,90,60,390,390,90,60,420,60,420,60,420,390,60,60,390,390,60,60,420,390,90,60,420,390,90,60,420,390,90,60,420,60,420,60,5070,
-390,90,390,90,390,90,390,90,60,420,390,60,390,60,390,60,60,420,390,60,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,60,420,60,5070,
-390,90,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,60,60,420,390,60,60,420,60,420,60,5070,
-390,60,390,60,390,60,390,90,60,420,390,90,390,90,390,60,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,60,60,420,60,420,60,5070,
-390,60,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,60,60,420,390,90,60,420,390,90,60,420,390,90,60,420,60,420,60,5070,
-390,60,390,90,390,90,390,60,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,60,420,60,5070,
-390,90,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,60,60,420,390,90,60,420,390,90,60,420,60,420,60,5070,
-390,90,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,60,420,60,5100,
-390,90,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,60,420,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,390,90,390,90,390,90,390,90,60,5100,
-390,90,390,90,390,90,390,90,60,420,390,90,390,90,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,90,60,420,390,60,390,90,390,90,390,90,390,90,60,5100,
-390,90,390,90,390,90,390,90,60,420,390;
-*/
-

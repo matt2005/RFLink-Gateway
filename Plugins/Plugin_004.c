@@ -13,7 +13,21 @@
  *                      Usage of any parts of this code in a commercial application is prohibited!
  ***********************************************************************************************
  * Pulse (T) is 275us PDM
- * 0 = T,T,T,4T, 1 = T,4T,T,T, dim = T,T,T,T op bit 27
+ * 0 = T,T,T,4T, 1 = T,4T,T,T, dim = T,T,T,T op bit 28
+ *
+ * From: Wieltje @ http://www.circuitsonline.net/forum/view/message/1181410#1181410 
+ *       _   _
+ * '0':	| |_| |____ (T,T,T,3T)
+ *       _      _
+ * '1':	| |____| |_ (T,3T,T,T)
+ *       _   _
+ * dim: | |_| |_    (T,T,T,T) 
+ *
+ * T = korte periode = 275 µs (of 375, werkt ook)
+ * lange periode = 3 of 4*T (werkt ook allebei)
+ *
+ * | 00100011110100100010011010 |   0 |     1 |  0000 | 
+ * | ID#                        | All | State | unit# | 
  *
  * NewKAKU supports:
  *   on/off       ---- 000x Off/On
@@ -29,34 +43,24 @@
  \*********************************************************************************************/
 #define NewKAKU_RawSignalLength      132        // regular KAKU packet length
 #define NewKAKUdim_RawSignalLength   148        // KAKU packet length including DIM bits
-
-#define NewKAKU_1T                   260        // us
 #define NewKAKU_mT                   650/RAWSIGNAL_SAMPLE_RATE // us, approx. in between 1T and 4T 
-#define NewKAKU_4T                   NewKAKU_1T*4        // 1040 us
-#define NewKAKU_8T                   NewKAKU_1T*8        // 2080 us, Tijd van de space na de startbit
-/*
-#define NewKAKU_1T                   225        // 275        // us
-#define NewKAKU_mT                   650/RAWSIGNAL_SAMPLE_RATE // us, approx. in between 1T and 4T 
-#define NewKAKU_4T                  1225        // 1100       // us
-#define NewKAKU_8T                  2600        // 2200       // us, Duration of the space after the start bit
-*/
 
 #ifdef PLUGIN_004
 boolean Plugin_004(byte function, char *string) {
       // nieuwe KAKU bestaat altijd uit start bit + 32 bits + evt 4 dim bits. Ongelijk, dan geen NewKAKU
       if ( (RawSignal.Number != NewKAKU_RawSignalLength) && (RawSignal.Number != NewKAKUdim_RawSignalLength) ) return false;
+      if (RawSignal.Pulses[0]==15) return true;     // Home Easy, skip KAKU
       boolean Bit;
       int i;
       //int P0,P1,P2,P3;
       byte P0,P1,P2,P3;
       byte dim=0;
+      byte dimbitpresent=0;
       unsigned long bitstream=0L;
       
-      // RawSignal.Number bevat aantal pulsRawSignal.Multiplyen * 2  => negeren
-      // RawSignal.Pulses[1] bevat startbit met tijdsduur van 1T => negeren
-      // RawSignal.Pulses[2] bevat lange space na startbit met tijdsduur van 8T => negeren
-      i=3; // RawSignal.Pulses[3] is de eerste van een T,xT,T,xT combinatie
-      //if ( RawSignal.Number==(NewKAKU_RawSignalLength-2) || RawSignal.Number==(NewKAKUdim_RawSignalLength-2) ) i=1;
+      // RawSignal.Pulses[1] startbit with duration of 1T => ignore
+      // RawSignal.Pulses[2] long space after startbit with duration of 8T => ignore
+      i=3; // RawSignal.Pulses[3] is first pulse of a T,xT,T,xT combination
       do {
           P0=RawSignal.Pulses[i]  ; // * RawSignal.Multiply;
           P1=RawSignal.Pulses[i+1]; // * RawSignal.Multiply;
@@ -65,34 +69,43 @@ boolean Plugin_004(byte function, char *string) {
           
           if (P0<NewKAKU_mT && P1<NewKAKU_mT && P2<NewKAKU_mT && P3>NewKAKU_mT) { 
               Bit=0; // T,T,T,4T
-              //Serial.print("0");
           } else 
           if (P0<NewKAKU_mT && P1>NewKAKU_mT && P2<NewKAKU_mT && P3<NewKAKU_mT) {
               Bit=1; // T,4T,T,T
-              //Serial.print("1");
           } else 
-          if (P0<NewKAKU_mT && P1<NewKAKU_mT && P2<NewKAKU_mT && P3<NewKAKU_mT) {      // T,T,T,T Deze hoort te zitten op i=111 want: 27e NewKAKU bit maal 4 plus 2 posities voor startbit
-             if(RawSignal.Number!=NewKAKUdim_RawSignalLength) {    // als de dim-bits er niet zijn
-               //Serial.println("No dim bits");
+          if (P0<NewKAKU_mT && P1<NewKAKU_mT && P2<NewKAKU_mT && P3<NewKAKU_mT) {  // T,T,T,T should be on i=111 (bit 28)
+             dimbitpresent=1;
+             if(RawSignal.Number!=NewKAKUdim_RawSignalLength) {    // dim set but no dim bits present => invalid signal
                return false;
              }
+             //if (i != 111) return false;                           // not the right location for the dim bit indicator
           } else {
             //Serial.println("Unknown pattern");
-            return false;                                          // andere mogelijkheden zijn niet geldig in NewKAKU signaal.  
+            return false;                                          // Other pulse patterns are invalid within the AC KAKU signal.  
           }
-          
-          if(i<130) {                                              // alle bits die tot de 32-bit pulstrein behoren 32bits * 4posities per bit + pulse/space voor startbit
+          if(i<130) {                                              // all bits that belong to the 32-bit pulse sequence (32bits * 4 positions per bit + pulse/space for startbit)
             bitstream=(bitstream<<1) | Bit;
-          } else {                                                 // de resterende vier bits die tot het dimlevel behoren 
+          } else {                                                 // remaining 4 bits that set the dim level
             dim=(dim<<1) | Bit;
           }       
-          i+=4;                                                    // volgende pulsenquartet
-      } while(i<RawSignal.Number-2);                             //-2 omdat de space/pulse van de stopbit geen deel meer van signaal uit maakt.
+          i+=4;                                                    // Next 4 pulses
+      } while(i<RawSignal.Number-2);                               //-2 to exclude the stopbit space/pulse 
       //==================================================================================
       // Prevent repeating signals from showing up
       //==================================================================================
-      if(SignalHash!=SignalHashPrevious || (RepeatingTimer+700<millis() ) || SignalCRC != bitstream ) { // 1000
+      if(SignalHash!=SignalHashPrevious || ((RepeatingTimer+700)<millis() ) || SignalCRC != bitstream ) { // 1000
          // not seen the RF packet recently
+         //Serial.print("NKAKU PREV:");
+         //Serial.println(SignalHashPrevious);
+         //if ((SignalHashPrevious==14) && ((RepeatingTimer+2000)>millis()) ) {
+         //   SignalHash=14;
+         //   return true;                            // SignalHash 14 = HomeEasy, eg. cant switch KAKU after HE for 2 seconds
+         //}
+         if ((SignalHashPrevious==11) && ((RepeatingTimer+2000)>millis()) ) {
+            SignalHash=11;
+            return true;                            // SignalHash 11 = FA500, eg. cant switch KAKU after FA500 for 2 seconds
+         }         
+         
          SignalCRC=bitstream;
       } else {
          // already seen the RF packet recently
@@ -111,17 +124,16 @@ boolean Plugin_004(byte function, char *string) {
       sprintf(pbuffer, "SWITCH=%x;", ((bitstream)&0x0f)+1 );
       Serial.print( pbuffer );
       Serial.print(F("CMD="));                    
-
       int command = (bitstream >> 4) & 0x03;
       if (command > 1) command ++;
-      if (i>140) {                                         // Command and Dim part
+      if (i>140 && dimbitpresent==1) {                     // Command and Dim part
           sprintf(pbuffer, "SET_LEVEL=%d;", dim );     
           Serial.print( pbuffer );
       } else {
           if ( command == 0 ) Serial.print(F("OFF;"));
           if ( command == 1 ) Serial.print(F("ON;"));
           if ( command == 3 ) Serial.print(F("ALLOFF;"));
-          if ( command == 4 ) Serial.print(F("ALLON;"));
+          if ( command == 4 ) Serial.print(F("ALLON;"));  
       }
       Serial.println();
       // ----------------------------------
@@ -132,6 +144,8 @@ boolean Plugin_004(byte function, char *string) {
 #endif // Plugin_004
 
 #ifdef PLUGIN_TX_004
+void AC_Send(unsigned long data, byte cmd);
+
 boolean PluginTX_004(byte function, char *string) {
         boolean success=false;
         //10;NewKaku;123456;3;ON;                   // ON, OFF, ALLON, ALLOFF, ALL 99, 99      
@@ -191,57 +205,137 @@ boolean PluginTX_004(byte function, char *string) {
            if (cmd == false) {                      // Not a valid command received? ON/OFF/ALLON/ALLOFF
               cmd=str2int(InputBuffer_Serial+x);    // get DIM value
            }
-           // --------------- NEWKAKU SEND ------------
-           //unsigned long bitstream=0L;
-           byte i=1;
-           x=0;                                     // aantal posities voor pulsen/spaces in RawSignal
-        
-           // bouw het KAKU adres op. Er zijn twee mogelijkheden: Een adres door de gebruiker opgegeven binnen het bereik van 0..255 of een lange hex-waarde
-           //if (tempaddress<=255)
-           //   bitstream=1|(tempaddress<<6);                             // Door gebruiker gekozen adres uit de Nodo_code toevoegen aan adres deel van de KAKU code. 
-           //else
-           bitstream=tempaddress & 0xFFFFFFCF;                          // adres geheel over nemen behalve de twee bits 5 en 6 die het schakel commando bevatten.
-    
-           RawSignal.Repeats=7;                                         // Aantal herhalingen van het signaal.
-           RawSignal.Delay=20;                                          // Tussen iedere pulsenreeks enige tijd rust.
+           // --------------- Prepare bitstream ------------
+           bitstream=tempaddress & 0xFFFFFFCF;      // adres geheel over nemen behalve de twee bits 5 en 6 die het schakel commando bevatten.
+
+           // Dimming of groups is also possible but not supported yet!
+           // when level=0 is it better to transmit just the off command ?
 
            if (cmd == VALUE_ON || cmd == VALUE_OFF) {
-              bitstream|=(cmd == VALUE_ON)<<4;                          // bit-5 is het on/off commando in KAKU signaal
-              x=130;                                                    // verzend startbit + 32-bits = 130
+              bitstream|=(cmd == VALUE_ON)<<4;      // bit-5 is the on/off command in the KAKU signal
+              cmd=0xff;
            } else
-              x=146;                                                    // verzend startbit + 32-bits = 130 + 4dimbits = 146
-     
-           // bitstream bevat nu de KAKU-bits die verzonden moeten worden.
-           for(i=3;i<=x;i++)RawSignal.Pulses[i]=NewKAKU_1T/RawSignal.Multiply;  // De meeste tijden in signaal zijn T. Vul alle pulstijden met deze waarde. Later worden de 4T waarden op hun plek gezet
-      
-           i=1;
-           RawSignal.Pulses[i++]=NewKAKU_1T/RawSignal.Multiply;         // pulse van de startbit
-           RawSignal.Pulses[i++]=NewKAKU_8T/RawSignal.Multiply;         // space na de startbit
-      
-           byte y=31;                                                   // bit uit de bitstream
-           while(i<x) {
-             if ((bitstream>>(y--))&1)
-                RawSignal.Pulses[i+1]=NewKAKU_4T/RawSignal.Multiply;    // Bit=1; // T,4T,T,T
-             else
-                RawSignal.Pulses[i+3]=NewKAKU_4T/RawSignal.Multiply;    // Bit=0; // T,T,T,4T
-    
-             if (x==146) {                                              // als het een dim opdracht betreft
-                if (i==111)                                             // Plaats van de Commando-bit uit KAKU 
-                   RawSignal.Pulses[i+3]=NewKAKU_1T/RawSignal.Multiply; // moet een T,T,T,T zijn bij een dim commando.
-                if (i==127) {                                           // als alle pulsen van de 32-bits weggeschreven zijn
-                   bitstream=(unsigned long)cmd;                        //  nog vier extra dim-bits om te verzenden. 
-                   y=3;
-                }
-             }
-             i+=4;
+           if (cmd == VALUE_ALLON || cmd == VALUE_ALLOFF) {
+              bitstream|= B1 << 5;                    // bit 5 is the group indicator
+              bitstream|=(cmd == VALUE_ALLON)<<4;     // bit-4 is the on/off indicator
+              cmd=0xff;
            }
-           RawSignal.Pulses[i++]=NewKAKU_1T/RawSignal.Multiply;         // pulse van de stopbit
-           RawSignal.Pulses[i]=0;                                       // space van de stopbit
-           RawSignal.Number=i;                                          // aantal bits*2 die zich in het opgebouwde RawSignal bevinden
-           RawSendRF();
+           // bitstream now contains the AC/NewKAKU-bits that have to be transmitted
+           // --------------- NEWKAKU SEND ------------
+           AC_Send(bitstream, cmd);
            success=true;
         }
         // --------------------------------------
         return success;
+}
+
+void AC_Send(unsigned long data, byte cmd) {
+    int fpulse = 260;                               // Pulse width in microseconds
+    int fretrans = 10;                              // Number of code retransmissions
+
+	unsigned long bitstream = 0L;
+    byte command;
+    // prepare data to send	
+	for (unsigned short i=0; i<32; i++) {           // reverse data bits
+		bitstream<<=1;
+		bitstream|=(data & B1);
+		data>>=1;
+	}
+    if (cmd !=0xff) {                               // reverse dim bits
+       for (unsigned short i=0; i<4; i++) {
+           command<<=1;
+		   command|=(cmd & B1);
+		   cmd>>=1;
+	   }
+    }
+    // Prepare transmit
+    digitalWrite(PIN_RF_RX_VCC,LOW);                // Turn off power to the RF receiver 
+    digitalWrite(PIN_RF_TX_VCC,HIGH);               // Enable the 433Mhz transmitter
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    // send bits
+    for (int nRepeat = 0; nRepeat <= fretrans; nRepeat++) {
+        data=bitstream; 
+        if (cmd !=0xff) cmd=command;
+		digitalWrite(PIN_RF_TX_DATA, HIGH);
+		//delayMicroseconds(fpulse);  //335
+		delayMicroseconds(335);       
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse*10 + (fpulse >> 1));  //335*9=3015 //260*10=2600
+		for (unsigned short i=0; i<32; i++) {
+            if (i==27 && cmd !=0xff) { // DIM command, send special DIM sequence TTTT replacing on/off bit
+				digitalWrite(PIN_RF_TX_DATA, HIGH);
+				delayMicroseconds(fpulse);
+				digitalWrite(PIN_RF_TX_DATA, LOW);
+				delayMicroseconds(fpulse);
+				digitalWrite(PIN_RF_TX_DATA, HIGH);
+				delayMicroseconds(fpulse);
+				digitalWrite(PIN_RF_TX_DATA, LOW);
+				delayMicroseconds(fpulse); 
+            } else
+			switch (data & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse*5); // 335*3=1005 260*5=1300  260*4=1040
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse*5);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse);
+					break;
+			}
+			//Next bit
+			data>>=1;
+		}
+		// send dim bits when needed
+        if (cmd != 0xff) {                          // need to send DIM command bits
+           for (unsigned short i=0; i<4; i++) {     // 4 bits
+			  switch (cmd & B1) {
+				case 0:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse*5); // 335*3=1005 260*5=1300
+					break;
+				case 1:
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse*5);
+					digitalWrite(PIN_RF_TX_DATA, HIGH);
+					delayMicroseconds(fpulse);
+					digitalWrite(PIN_RF_TX_DATA, LOW);
+					delayMicroseconds(fpulse);
+					break;
+			  }
+			  //Next bit
+			  cmd>>=1;
+           }
+        }        
+		//Send termination/synchronisation-signal. Total length: 32 periods
+		digitalWrite(PIN_RF_TX_DATA, HIGH);
+		delayMicroseconds(fpulse);
+		digitalWrite(PIN_RF_TX_DATA, LOW);
+		delayMicroseconds(fpulse*40); //31*335=10385 40*260=10400
+	}
+    // End transmit
+    delayMicroseconds(TRANSMITTER_STABLE_DELAY);    // short delay to let the transmitter become stable (Note: Aurel RTX MID needs 500µS/0,5ms)
+    digitalWrite(PIN_RF_TX_VCC,LOW);                // Turn thew 433Mhz transmitter off
+    digitalWrite(PIN_RF_RX_VCC,HIGH);               // Turn the 433Mhz receiver on
+    RFLinkHW();
 }
 #endif // Plugin_TX_004

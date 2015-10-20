@@ -170,15 +170,17 @@ boolean Plugin_002(byte function, char *string) {
          unsigned long rain=((data[6])<<8)+((data[7])<<4)+(data[8]);
          if ( (data[0]) == 0x09) {                  // WS2300
             rain=rain*508;                          // 0-4095 * 0.508mm
+            rain=rain/350;                          // divide by 3.5                      
          } else {
             rain=rain*518;                          // 0-4095 * 0.518mm
+            rain=rain/100;                             
          }                                          
-         rain=rain/100;                             
          // ----------------------------------      // 8c = 140 = 140*0,518=72,5mm   
          Serial.print("20;");
          PrintHexByte(PKSequenceNumber++);
-         Serial.print(F(";LaCrosseV2;ID="));         // Label
-         PrintHex8( data+2,2);
+         Serial.print(F(";LaCrosseV2;ID=00"));         // Label
+         PrintHex8( data+2,1);
+         //PrintHex8( data+2,2);
          // ----------------------------------
          sprintf(pbuffer, ";RAIN=%04x;", (rain)&0xffff);     
          Serial.println( pbuffer );
@@ -196,6 +198,9 @@ boolean Plugin_002(byte function, char *string) {
          
          sensordata=((data[6])<<4)+data[7];         // possibly 9 bits?
          sensordata=sensordata * 36;                // go from m/s to km/hr 6*36=216 = 21,6 km hr = 6 m/s 
+         if ( (data[0]) == 0x09) {                  // WS2300
+            sensordata=sensordata / 10;             // divide by 10
+         }
          // 216 * 0,0277778   
          sprintf(pbuffer, "WINGS=%04x;WINSP=%04x;", sensordata, sensordata);     
          Serial.println( pbuffer );
