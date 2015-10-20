@@ -23,7 +23,8 @@ Packet structure - Send data via RF:
 10;Kaku;00004d;1;OFF;       => Kaku/ARC protocol;address;action (ON/OFF)
 10;AB400D;00004d;1;OFF;     => Sartano protocol;address;action (ON/OFF)
 10;Impuls;00004d;1;OFF;     => Impuls protocol;address;action (ON/OFF)
-10;NewKaku;00c142;1;ON;     => Newkaku/AC protocol;address;button number (hexadecimal 0x0-0x0f);action (ON/OFF/ALLON/ALLOFF/15 - 1 to 15 for direct dim level)
+10;NewKaku;00c142;1;ON;     => Newkaku/AC protocol;address (24 bits);button number (hexadecimal 0x0-0x0f);action (ON/OFF/ALLON/ALLOFF/15 - 1 to 15 for direct dim level)
+10;NewKaku;128ac4d;1;OFF;   => Newkaku/AC protocol;address (28 bits);button number (hexadecimal 0x0-0x0f);action (ON/OFF/ALLON/ALLOFF/15 - 1 to 15 for direct dim level)
 10;Eurodomest;123456;01;ON; => Eurodomest protocol;address;button number;action (ON/OFF/ALLON/ALLOFF)
 10;Blyss;ff98;A1;OFF;       => Blyss protocol;address;button;action (ON/OFF/ALLON/ALLOFF)
 10;Conrad;ff0607;1;OFF;     => Conrad RSL protocol, address, button number, action (ON/OFF/ALLON/ALLOFF)
@@ -34,6 +35,7 @@ Packet structure - Send data via RF:
 10;Powerfix;000080;0;ON;    => Powerfix/Quigg/Chacon protocol;address;action (ON/OFF)
 10;Ikea Koppla;000080;0;ON; => Koppla protocol;address;action (ON/OFF) 
 10;HomeEasy;7900b100;3;ON;  => Home Easy protocol;address;action (ON/OFF/ALLON/ALLOFF)
+10;EV1527;000080;0;ON;      => EV1527 protocol;address;device 0x00-0x0f,action ON/OFF
 10;Chuango;000080;2;ON;     => Chuango Protocol;address;action (ON/OFF/ALLON/ALLOFF)
 10;Selectplus;001c33;       => SelectPlus protocol;address
 10;Byron;112233;01;OFF;     => Dyron SX protocol;address;ringtone

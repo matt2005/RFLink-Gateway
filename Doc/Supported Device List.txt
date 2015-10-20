@@ -8,7 +8,7 @@ ARC Protocol:                                       (Send + Receive)
  - Princeton PT2262  
  - MOSDESIGN M3EB  
  - Domia Lite  
- - Intertechno)  
+ - Intertechno 
  - CoCo Technologies  
  - Cogex  
  - D-IO (Chacon)  
@@ -35,7 +35,8 @@ ARC Protocol:                                       (Send + Receive)
 Automatic Code Learning Protocols:                  (Send + Receive)  
 - Klik Aan Klik Uit  
   (among others: AWMR210, AWMT230, AWMD250, AWST8800)  
-- Nexa Jula Anslut   
+- Nexa Jula Anslut  
+  (among others: 408-063, 408-064)
 - Home Easy EU (among others HE100, HE200, HE300, AB600/HE600, HE800)
 - Smartwares (SH5-TDR-K 10.037.17)  
   
@@ -51,10 +52,15 @@ Others:                                             (Send + Receive)
 - Home Confort Smart Home - TEL-010  
 - Quigg GT-7008BS, Quigg GT-FSI-04  
 - DMV-7008S   
+- Mandolyn RC-710
 - Powerfix RCB-I 3600  
+- Quigg GT-8000
 - Chacon (TR-502MSV, NR.RC402)
 - Rev Ritter REV 8342L  
 - Ikea Koppla
+- TRC02 RGB Controller
+- Aster / GEMINI   EMC/99/STI/037 
+- Silvercrest l36-001
   
 - Flamingo FA500R/S/DSS/WD                           
 - SilverCrest 91210/60494 RCS AAA3680  
@@ -99,7 +105,7 @@ Oregon V1/2/3:
           THGN122N, THGN123N, THGR122NX, THGR228N, THGR238, WTGR800, THGR918, THGRN228NX, THGN500,
           THGR810, RTGR328N, THGR328N, Huger BTHR918, BTHR918N, BTHR968, RGR126, RGR682, RGR918, PCR122,
           THWR800, THR128, THR138, THC138, OWL CM119, cent-a-meter, OWL CM113, Electrisave, RGR928,
-          UVN128, UV138, UVN800, Huger-STR918, WGR918, WGR800, PCR800, WGTR800, BTHG968
+          UVN128, UV138, UVN800, Huger-STR918, WGR918, WGR800, PCR800, WGTR800, BTHG968, OWL CM180, BTHGN129
 ============================================================================
 Pool/Water Thermometer          
           Conrad 9771 Pool Thermometer
@@ -108,22 +114,37 @@ Soil : Temperature & Moisture/Humidity Sensors
           Imagintronix XH300 sensor
           TH12 Opus TX300 
 ============================================================================
-Window blinds/shutters/sun screens:
------------------------------------
-Kaku ASUN650
-
+Dusk Sensors (Light On/Off detection):  
+-----------------------------------  
+KAKU ABST-604  
+Home Easy HE863  
+Intertechno ITDS-5
 ============================================================================
-Motion Detectors & Door/Window sensors:
+Window blinds/shutters/sun screens:  
+-----------------------------------  
+Kaku ASUN650
+Intertechno CMR-500, ITL-500, ITL-1000   
+============================================================================
+Motion Detectors:
 --------------------------------
 Low Budget Chinese PIR (only signals motion detection)
-Low Budget Chinese Door/Window detectors 
+Aritech PIR (only signals motion detection)
 Ajax Chub Varel PIR (only signals motion detection)
-KAKU AMST-606 door/window sensor (separate signals for open and close)
-CHACON DIO 54781 (separate signals for open and close)
-COCO
-Chuango Alarm devices
+Chuango: among others PIR-900 PIR sensor 
 Oregon Scientific NR868 PIR/night light
 Oregon Scientific MSR939 PIR
+============================================================================
+Door/Window sensors:
+--------------------------------
+Low Budget Chinese Door/Window detectors 
+Intertechno ITM-100 
+KAKU AMST-606 door/window sensor (separate signals for open and close)
+Home Easy HE852 (separate signals for open and close)
+CHACON DIO 54781 (separate signals for open and close)
+COCO (separate signals for open and close)
+Evology door/window contact sensor
+ELMES CTX3H, CTX4H
+Chuango: among others DWC-100 Door sensor, DWC-102 Door sensor 
 ============================================================================
 Fireplace:
 ----------
@@ -132,6 +153,7 @@ Mertik G6R H4T1 / Dru
 Smoke Detectors:
 ----------------
 KD101                                                                          (Send + Receive)
+Diamant Smoke alarm                                                            (Send + Receive) 
 Flamingo FA20RF                                                                (Send + Receive)
 Chacon 34126                                                                   (Send + Receive)
 ============================================================================
@@ -139,10 +161,13 @@ Doorbells:
 ----------
 SelectPlus (200689103 - Black - Date code:0614), 1 by One, Delta (O00 QH-0031) (Send + Receive)
 SelectPlus (200689101 - White - Date code:0914)                                (Send + Receive)
+KAKU ACDB 6500BC                                                               (Send + Receive) 
 Deltronic Wireless Doorbell                                                    (Send + Receive) 
 RL-02 Wireless Doorbell                                                        (Send + Receive) 
 Byron SX                                                                       (Send + Receive)
 SilverCrest Z31370-TX                                                          (Receive) 
+Forrinx                                                                        (Receive) 
+L^Home model 32311T                                                            (Receive)
 Plieger York                                                                   (Receive) 
         Note that when the Plieger button is detected as Conrad RSL2, you need to use the button 
         on the inside of the Plieger doorbell to change the address code of the Plieger.
@@ -181,3 +206,13 @@ Variabele  6 : Pulse value 6
 
 If you require support for other sensors just let us know.
 ============================================================================
+
+Chuango
+ * G5 GSM/SMS/RFID Touch Alarm System 
+ * DWC-100 Door sensor 
+ * DWC-102 Door sensor 
+ * KP-700 Wireless Keypad 
+ * PIR-900 PIR sensor 
+ * RC-80 Remote Control 
+ * SMK-500 Smoke sensor 
+ 
