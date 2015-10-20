@@ -87,9 +87,9 @@ void RFLinkHW( void ) {
      return;
 }
 /*********************************************************************************************\
- * Send rawsignal buffer to RF
+ * Send rawsignal buffer to RF  * DEPRICATED * DO NOT USE *
 \*********************************************************************************************/
-void RawSendRF(void) {
+void RawSendRF(void) {                                                    // * DEPRICATED * DO NOT USE *
   int x;
   digitalWrite(PIN_RF_RX_VCC,LOW);                                        // Spanning naar de RF ontvanger uit om interferentie met de zender te voorkomen.
   digitalWrite(PIN_RF_TX_VCC,HIGH);                                       // zet de 433Mhz zender aan

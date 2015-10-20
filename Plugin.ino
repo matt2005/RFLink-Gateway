@@ -404,6 +404,86 @@
 #include PLUGINFILE(SKETCH_PATH,Plugin_100.c)
 #endif
 
+#ifdef PLUGIN_101
+#include PLUGINFILE(SKETCH_PATH,Plugin_101.c)
+#endif
+
+#ifdef PLUGIN_102
+#include PLUGINFILE(SKETCH_PATH,Plugin_102.c)
+#endif
+
+#ifdef PLUGIN_103
+#include PLUGINFILE(SKETCH_PATH,Plugin_103.c)
+#endif
+
+#ifdef PLUGIN_104
+#include PLUGINFILE(SKETCH_PATH,Plugin_104.c)
+#endif
+
+#ifdef PLUGIN_105
+#include PLUGINFILE(SKETCH_PATH,Plugin_105.c)
+#endif
+
+#ifdef PLUGIN_106
+#include PLUGINFILE(SKETCH_PATH,Plugin_106.c)
+#endif
+
+#ifdef PLUGIN_107
+#include PLUGINFILE(SKETCH_PATH,Plugin_107.c)
+#endif
+
+#ifdef PLUGIN_108
+#include PLUGINFILE(SKETCH_PATH,Plugin_108.c)
+#endif
+
+#ifdef PLUGIN_109
+#include PLUGINFILE(SKETCH_PATH,Plugin_109.c)
+#endif
+
+#ifdef PLUGIN_110
+#include PLUGINFILE(SKETCH_PATH,Plugin_110.c)
+#endif
+
+#ifdef PLUGIN_111
+#include PLUGINFILE(SKETCH_PATH,Plugin_111.c)
+#endif
+
+#ifdef PLUGIN_112
+#include PLUGINFILE(SKETCH_PATH,Plugin_112.c)
+#endif
+
+#ifdef PLUGIN_113
+#include PLUGINFILE(SKETCH_PATH,Plugin_113.c)
+#endif
+
+#ifdef PLUGIN_114
+#include PLUGINFILE(SKETCH_PATH,Plugin_114.c)
+#endif
+
+#ifdef PLUGIN_115
+#include PLUGINFILE(SKETCH_PATH,Plugin_115.c)
+#endif
+
+#ifdef PLUGIN_116
+#include PLUGINFILE(SKETCH_PATH,Plugin_116.c)
+#endif
+
+#ifdef PLUGIN_117
+#include PLUGINFILE(SKETCH_PATH,Plugin_117.c)
+#endif
+
+#ifdef PLUGIN_118
+#include PLUGINFILE(SKETCH_PATH,Plugin_118.c)
+#endif
+
+#ifdef PLUGIN_119
+#include PLUGINFILE(SKETCH_PATH,Plugin_119.c)
+#endif
+
+#ifdef PLUGIN_120
+#include PLUGINFILE(SKETCH_PATH,Plugin_120.c)
+#endif
+
 #ifdef PLUGIN_250
 #include PLUGINFILE(SKETCH_PATH,Plugin_250.c)
 #endif
@@ -839,6 +919,86 @@ void PluginInit(void)
   
   #ifdef PLUGIN_100
   Plugin_id[x]=100;Plugin_ptr[x++]=&Plugin_100;
+  #endif
+  
+  #ifdef PLUGIN_101
+  Plugin_id[x]=101;Plugin_ptr[x++]=&Plugin_101;
+  #endif
+  
+  #ifdef PLUGIN_102
+  Plugin_id[x]=102;Plugin_ptr[x++]=&Plugin_102;
+  #endif
+  
+  #ifdef PLUGIN_103
+  Plugin_id[x]=103;Plugin_ptr[x++]=&Plugin_103;
+  #endif
+  
+  #ifdef PLUGIN_104
+  Plugin_id[x]=104;Plugin_ptr[x++]=&Plugin_104;
+  #endif
+  
+  #ifdef PLUGIN_105
+  Plugin_id[x]=105;Plugin_ptr[x++]=&Plugin_105;
+  #endif
+  
+  #ifdef PLUGIN_106
+  Plugin_id[x]=106;Plugin_ptr[x++]=&Plugin_106;
+  #endif
+  
+  #ifdef PLUGIN_107
+  Plugin_id[x]=107;Plugin_ptr[x++]=&Plugin_107;
+  #endif
+  
+  #ifdef PLUGIN_108
+  Plugin_id[x]=108;Plugin_ptr[x++]=&Plugin_108;
+  #endif
+  
+  #ifdef PLUGIN_109
+  Plugin_id[x]=109;Plugin_ptr[x++]=&Plugin_109;
+  #endif
+  
+  #ifdef PLUGIN_110
+  Plugin_id[x]=110;Plugin_ptr[x++]=&Plugin_110;
+  #endif
+  
+  #ifdef PLUGIN_111
+  Plugin_id[x]=111;Plugin_ptr[x++]=&Plugin_111;
+  #endif
+  
+  #ifdef PLUGIN_112
+  Plugin_id[x]=112;Plugin_ptr[x++]=&Plugin_112;
+  #endif
+  
+  #ifdef PLUGIN_113
+  Plugin_id[x]=113;Plugin_ptr[x++]=&Plugin_113;
+  #endif
+  
+  #ifdef PLUGIN_114
+  Plugin_id[x]=114;Plugin_ptr[x++]=&Plugin_114;
+  #endif
+  
+  #ifdef PLUGIN_115
+  Plugin_id[x]=115;Plugin_ptr[x++]=&Plugin_115;
+  #endif
+  
+  #ifdef PLUGIN_116
+  Plugin_id[x]=116;Plugin_ptr[x++]=&Plugin_116;
+  #endif
+  
+  #ifdef PLUGIN_117
+  Plugin_id[x]=117;Plugin_ptr[x++]=&Plugin_117;
+  #endif
+  
+  #ifdef PLUGIN_118
+  Plugin_id[x]=118;Plugin_ptr[x++]=&Plugin_118;
+  #endif
+  
+  #ifdef PLUGIN_119
+  Plugin_id[x]=119;Plugin_ptr[x++]=&Plugin_119;
+  #endif
+  
+  #ifdef PLUGIN_120
+  Plugin_id[x]=120;Plugin_ptr[x++]=&Plugin_120;
   #endif
   
   #ifdef PLUGIN_250

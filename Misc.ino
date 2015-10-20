@@ -13,6 +13,13 @@ int str2cmd(char *command) {
     if(strcasecmp(command,"ALLON") == 0) return VALUE_ALLON;
     if(strcasecmp(command,"ALLOFF") == 0) return VALUE_ALLOFF;
     if(strcasecmp(command,"PAIR") == 0) return VALUE_PAIR;
+    if(strcasecmp(command,"DIM") == 0) return VALUE_DIM;
+    if(strcasecmp(command,"BRIGHT") == 0) return VALUE_BRIGHT;
+    if(strcasecmp(command,"UP") == 0) return VALUE_UP;
+    if(strcasecmp(command,"DOWN") == 0) return VALUE_DOWN;
+    if(strcasecmp(command,"STOP") == 0) return VALUE_STOP;
+    if(strcasecmp(command,"CONFIRM") == 0) return VALUE_CONFIRM;
+    if(strcasecmp(command,"LIMIT") == 0) return VALUE_LIMIT;
     return false;
 }
 /********************************************************************************************\
@@ -56,6 +63,16 @@ void PrintHexByte(uint8_t data) { // prints 8-bit value in hex (single byte)
   else tmp[1] = first;
   tmp[2] = 0;
   Serial.print(tmp);
+}
+/*********************************************************************************************/
+// Reverse all bits in a byte
+byte reverseBits(byte data) {
+    byte b = data;
+    for (byte i = 0; i < 8; ++i) {
+        data = (data << 1) | (b & 1);
+        b >>= 1;
+    }
+    return data;
 }
 /*********************************************************************************************/
 
