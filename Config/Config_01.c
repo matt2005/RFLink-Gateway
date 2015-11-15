@@ -26,11 +26,6 @@
 #define PLUGIN_013              // Powerfix/Quigg
 #define PLUGIN_014              // Ikea Koppla
 #define PLUGIN_015              // Home Easy EU 
-#define PLUGIN_016              // BofuMotor
-#define PLUGIN_017              // Aster
-#define PLUGIN_018              // Europe/Conrad
-#define PLUGIN_019              // Unitec
-//#define PLUGIN_020              // RGB Switch
 // -------------------
 // Weather sensors
 // -------------------
@@ -47,9 +42,7 @@
 #define PLUGIN_044              // Auriol v3
 #define PLUGIN_045              // Auriol
 #define PLUGIN_046              // Auriol v2 / Xiron
-#define PLUGIN_047              // Biowin
 #define PLUGIN_048              // Oregon V1/2/3
-#define PLUGIN_059              // Somfy Telis 
 // -------------------
 // Motion Sensors, include when needed
 // -------------------
@@ -57,7 +50,6 @@
 #define PLUGIN_061              // Chinese PIR motion door and window sensors 
 #define PLUGIN_062              // Chuango Alarm Devices
 #define PLUGIN_063              // Oregon PIR/ALARM/LIGHT
-#define PLUGIN_064              // Elmes sensors
 // -------------------
 // Doorbells
 // -------------------
@@ -67,8 +59,6 @@
 #define PLUGIN_073              // Deltronic doorbell
 #define PLUGIN_074              // RL02
 #define PLUGIN_075              // Silvercrest
-#define PLUGIN_076              // Forrinx
-//#define PLUGIN_077              // Friedland
 // -------------------
 // Smoke detectors / Fire Places
 // -------------------
@@ -104,17 +94,7 @@
 #define PLUGIN_TX_011           // Home Confort
 #define PLUGIN_TX_012           // Flamingo FA500R  (11)
 #define PLUGIN_TX_013           // Powerfix/Quigg
-#define PLUGIN_TX_014           // Ikea Koppla
 #define PLUGIN_TX_015           // Home Easy EU     (14)
-#define PLUGIN_TX_016           // BofuMotor
-#define PLUGIN_TX_017           // Aster
-#define PLUGIN_TX_018           // Europe/Conrad
-#define PLUGIN_TX_019           // Unitec
-// -------------------
-// Sensors / Alarm
-// -------------------
-#define PLUGIN_TX_061           // EV1527
-#define PLUGIN_TX_062           // Chuango
 // -------------------
 // Doorbells
 // -------------------

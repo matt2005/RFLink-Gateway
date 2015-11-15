@@ -1,3 +1,9 @@
+! ============================================================================
+! Only for educational purposes, the source might not be synchronized with the
+! latest release! 
+! For normal operation, use the RFLink Loader that includes the latest release
+! ============================================================================
+
 Please note that the RFLink Gateway is a freeware project.   
 Stuntteam is not making money in any way.   
 This means that there are no unlimited funds to purchase test devices,   
@@ -23,9 +29,41 @@ In all other cases:
   Simply stick the pins of the capacitor in the power connector socket.  
   When you want to update the firmware of the Arduino, remove the capacitor and reconnect it when done.   
   For details about the Domoticz Synology package check out: http://www.jadahl.com  
-------------------------  
-R34: (Work In Progress: Build 001)   
-- In progress: Full HomeEasy HE800 protocol support!  
+------------------------
+RFlink via Network Connection:   
+It is possible to use RFlink via a network connection using ser2net.   
+------------------------   
+You can now use the RFLink Gateway with the following home automation software:   
+Domoticz   
+Jeedom   
+------------------------   
+R35: (Work-In-Progress) Build 05   
+- Added: Brel motor support   
+- Fixed: Oregon OWL CM119, CM160, CM180  
+- Fixed: Corrected WH440 temperature values    
+- Fixed: Improved Philips SBC   
+- Fixed: Improved Chacon EMW200   
+- Fixed: Removed a slash in the UPM/Esic name   
+- Tested: tested and working: Lidl / Libra TR502MSV switches   
+   
+R34:   
+- Added: Heidemann HX Silverline 70290   
+- Added: Eurochron EAS 301Z / EAS 302   
+- Added: Znane-01 switch set sold at Biedronka (Impuls clone)   
+- Added: HomeEasy HE800 protocol support   
+- Added: Fine Offset Electronics WH2, Agimex Rosenborg 66796, ClimeMET CM9088   
+- Added: Somfy Smoove Origin RTS (433mhz) (receive)   
+- Tested: Eurodomest 972086 (Sold at Action in Belgium)   
+- Added: Eurodomest revised protocol (full autodetection)
+- Added: Prologue temperature sensor support   
+- Tested: tested and working: Home Confort, Smart Home PRF-100 switch set     
+- Fixed: Auto detection of "Emil Lux"/LUX-Tools remote control/switch set (Sold at Obi.de Art.Nr. 2087971) (Impuls clone)    
+- Fixed: Alecto WS1100 working properly again (Adjusted pulse range and displayed humidity value)   
+- Fixed: Byron SX receive and send commands   
+- Fixed: Ikea Koppla Send routines  
+- Fixed: Improved the Impuls remote detection   
+- Fixed: Impuls transmit   
+- Changed: added checks for valid temperatures in various plugins   
    
 R33:
 - Updated RFlink loader to version 1.03 to include a serial log option with command sending ability!   
