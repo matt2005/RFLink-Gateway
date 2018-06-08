@@ -1,3 +1,19 @@
+/**int strncasecmp(const char *s1, const char *s2, size_t n) {
+  return strncmp(s1,s2,n);
+}**/
+int strncasecmp(const char *s, const char *t, size_t n) {
+    while(n--) {
+        if(toupper(*s) != toupper(*t)) {
+            return toupper(*s) - toupper(*t);
+        }
+        else {
+            ++s;
+            ++t;
+        }
+    }
+
+    return 0;
+}
 /*********************************************************************************************\
  * Convert HEX or DEC tring to unsigned long HEX, DEC
 \*********************************************************************************************/

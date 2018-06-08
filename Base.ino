@@ -36,6 +36,12 @@
 #define VALUE_ALLON                     141
 
 // PIN Definition 
+#ifdef ESP8266
+#define PIN_RF_TX_VCC               D5
+#define PIN_RF_TX_DATA              D6
+#define PIN_RF_RX_VCC               D7
+#define PIN_RF_RX_DATA              D8
+#else
 #define PIN_BSF_0                   22                                          // Board Specific Function lijn-0
 #define PIN_BSF_1                   23                                          // Board Specific Function lijn-1
 #define PIN_BSF_2                   24                                          // Board Specific Function lijn-2
@@ -44,6 +50,7 @@
 #define PIN_RF_TX_DATA              14                                          // Data to the 433Mhz transmitter on this pin
 #define PIN_RF_RX_VCC               16                                          // Power to the receiver on this pin
 #define PIN_RF_RX_DATA              19                                          // On this input, the 433Mhz-RF signal is received. LOW when no signal.
+#endif
 
 //****************************************************************************************************************************************
 byte dummy=1;                                                                   // get the linker going. Bug in Arduino. (old versions?)
@@ -88,8 +95,21 @@ unsigned long SignalCRC=0L;                                                     
 unsigned long SignalHash=0L;                                                    // holds the processed plugin number
 unsigned long SignalHashPrevious=0L;                                            // holds the last processed plugin number
 
+#ifdef ESP8266
+#include "RF.h"
+
+RFrecv myRecv = RFrecv(PIN_RF_RX_DATA);
+rfdecode_results results;
+
+#endif
 void setup() {
   Serial.begin(BAUD);                                                           // Initialise the serial port
+#ifdef ESP8266
+  //myRecv = RFrecv(PIN_RF_RX_DATA);
+  
+  myRecv.enableRX();
+#endif
+#else
   pinMode(PIN_RF_RX_DATA, INPUT);                                               // Initialise in/output ports
   pinMode(PIN_RF_TX_DATA, OUTPUT);                                              // Initialise in/output ports
   pinMode(PIN_RF_TX_VCC,  OUTPUT);                                              // Initialise in/output ports
@@ -102,6 +122,7 @@ void setup() {
 
   RFbit=digitalPinToBitMask(PIN_RF_RX_DATA);
   RFport=digitalPinToPort(PIN_RF_RX_DATA);
+#endif
   Serial.print(F("20;00;Nodo RadioFrequencyLink - RFLink Gateway V1.1 - "));
   sprintf(InputBuffer_Serial,"R%02x;",REVNR);
   Serial.println(InputBuffer_Serial); 

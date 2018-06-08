@@ -1,5 +1,43 @@
 /*********************************************************************************************/
 boolean ScanEvent(void) {                                         // Deze routine maakt deel uit van de hoofdloop en wordt iedere 125uSec. doorlopen
+  
+#ifdef ESP8266
+       if (myRecv.decode(&results)) {
+         /**
+         Serial.printf("Count = %d,",results.rawlen);
+         for (int i=0;i!=results.rawlen;i++) {
+           //Serial.println(results.rawbuf[i]);
+           Serial.printf("%lu,",results.rawbuf[i]);
+         }
+         Serial.printf("\n");**/
+         
+         int RawCodeLength=0;
+         unsigned long PulseLength=0L;
+         RawCodeLength=1;
+         for (int i=0; i!=results.rawlen; i++) {
+           PulseLength =  results.rawbuf[i];
+           RawSignal.Pulses[RawCodeLength++]=PulseLength/(unsigned long)(RAWSIGNAL_SAMPLE_RATE); // store in RawSignal !!!! 
+         }
+         if (RawCodeLength>=MIN_RAW_PULSES) {
+           RawSignal.Repeats=0;                                                      // no repeats
+           RawSignal.Multiply=RAWSIGNAL_SAMPLE_RATE;                                 // sample size.
+           RawSignal.Number=RawCodeLength;                                           // Number of received pulse times (pulsen *2)
+           RawSignal.Pulses[RawSignal.Number+1]=0;                                   // Last element contains the timeout. 
+           RawSignal.Time=millis();                                                  // Time the RF packet was received (to keep track of retransmits
+         } else {
+             RawSignal.Number=0;    
+         }
+         if (RawSignal.Number > 0) {               
+            if ( PluginRXCall(0,0) ) {                                // Check all plugins to see which plugin can handle the received signal.
+               RepeatingTimer=millis()+SIGNAL_REPEAT_TIME;
+               return true;
+            }
+         }
+       }
+       delay(100);
+       return false;
+#else
+
   unsigned long Timer=millis()+SCAN_HIGH_TIME;
 
   while(Timer>millis() || RepeatingTimer>millis()) {
@@ -11,7 +49,9 @@ boolean ScanEvent(void) {                                         // Deze routin
        }
   }// while
   return false;
+#endif
 }
+#ifndef ESP8266
 /**********************************************************************************************\
  * Haal de pulsen en plaats in buffer. 
  * bij de TSOP1738 is in rust is de uitgang hoog. StateSignal moet LOW zijn
@@ -77,13 +117,16 @@ boolean FetchSignal(byte DataPin, boolean StateSignal) {
   }
   return false;
 }
+#endif
 /*********************************************************************************************/
 // RFLink Board specific: Generate a short pulse to switch the Aurel Transceiver from TX to RX mode.
 void RFLinkHW( void ) {
+#ifndef ESP8266
      delayMicroseconds(36);
      digitalWrite(PIN_BSF_0,LOW);
      delayMicroseconds(16);
      digitalWrite(PIN_BSF_0,HIGH);
+#endif
      return;
 }
 /*********************************************************************************************\
