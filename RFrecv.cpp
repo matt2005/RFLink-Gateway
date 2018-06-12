@@ -1,5 +1,5 @@
 #include "RF.h"
-
+#ifdef ESP8266
 extern "C" {
 #include "user_interface.h"
 #include "gpio.h"
@@ -110,5 +110,5 @@ int RFrecv::decode(rfdecode_results *results) {
   resume();
   return DECODED;
 }
-
+#endif
 // ---------------------------------------------------------------

@@ -1,6 +1,7 @@
 /**int strncasecmp(const char *s1, const char *s2, size_t n) {
   return strncmp(s1,s2,n);
 }**/
+#ifdef ESP8266
 int strncasecmp(const char *s, const char *t, size_t n) {
     while(n--) {
         if(toupper(*s) != toupper(*t)) {
@@ -14,6 +15,7 @@ int strncasecmp(const char *s, const char *t, size_t n) {
 
     return 0;
 }
+#endif
 /*********************************************************************************************\
  * Convert HEX or DEC tring to unsigned long HEX, DEC
 \*********************************************************************************************/

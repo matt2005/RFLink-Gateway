@@ -20,7 +20,7 @@
 // Geef in onderstaande "define" regel het volledige pad op waar de .ino bestanden zich bevinden die je nu geopend hebt.
 // ================================================================================================================================
 
-#define SKETCH_PATH D:\arduino\RFLink
+#define SKETCH_PATH C:\Users\Matt\Documents\git\RFLink
 
 // ================================================================================================================================
 // IMPORTANT NOTE: This code only runs on an Arduino MEGA !!!!!!!!!!!!!!!!!!!!!!  It was designed that way for various reasons.

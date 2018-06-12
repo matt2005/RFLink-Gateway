@@ -97,18 +97,16 @@ unsigned long SignalHashPrevious=0L;                                            
 
 #ifdef ESP8266
 #include "RF.h"
-
 RFrecv myRecv = RFrecv(PIN_RF_RX_DATA);
 rfdecode_results results;
-
 #endif
+
 void setup() {
   Serial.begin(BAUD);                                                           // Initialise the serial port
 #ifdef ESP8266
   //myRecv = RFrecv(PIN_RF_RX_DATA);
   
   myRecv.enableRX();
-#endif
 #else
   pinMode(PIN_RF_RX_DATA, INPUT);                                               // Initialise in/output ports
   pinMode(PIN_RF_TX_DATA, OUTPUT);                                              // Initialise in/output ports
